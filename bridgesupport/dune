@@ -1,0 +1,8 @@
+(executable
+ (name main)
+ (public_name bs-to-ml)
+ (libraries
+  camlkit-base.foundation
+  markup
+  lambdasoup
+  lib))
