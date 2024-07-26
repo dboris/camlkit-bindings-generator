@@ -125,18 +125,29 @@ let emit_cftype fw x =
     print_endline "end\n"
   end
 
-let func_type el =
+let select_children tag el =
+  S.children el
+  |> S.elements
+  |> S.fold (fun acc el -> if S.name el = tag then el :: acc else acc) []
+  |> List.rev
+
+let rec func_type el =
   let arg_types =
-    S.select "arg" el
-    |> S.to_list
+    select_children "arg" el
     |> List.map (fun arg ->
       try
-        match S.attribute "type64" arg with
-        | Some ty -> Encode.type64_to_ctype_string ty
-        | None ->
-          S.attribute "type" arg
-          |> Option.map Encode.type64_to_ctype_string
-          |> Option.get
+        begin match S.attribute "function_pointer" arg with
+        | Some "true" ->
+           let args = func_type arg in
+           "Foreign.funptr (" ^ args ^ ")"
+        | _ ->
+          match S.attribute "type64" arg with
+          | Some ty -> Encode.type64_to_ctype_string ty
+          | None ->
+            S.attribute "type" arg
+            |> Option.map Encode.type64_to_ctype_string
+            |> Option.get
+        end
       with
       | Failure _ as e ->
         Printf.eprintf
@@ -144,8 +155,8 @@ let func_type el =
         raise e)
   and ret =
     try
-      S.select_one "retval" el
-      |> Option.get
+      select_children "retval" el
+      |> List.hd
       |> S.attribute "type64"
       |> Option.get
       |> Encode.type64_to_ctype_string
