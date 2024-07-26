@@ -118,7 +118,7 @@ let test_parse_VectorField () =
   A.check A.string "same string" expected (Option.get actual)
 
 let test_parse_array_of_struct () =
-  let expected = "(ptr void)"
+  let expected = "CVPlanarPixelBufferInfo.t"
   and actual =
     Encode.parse_type "{CVPlanarPixelBufferInfo=\"componentInfo\"[1{CVPlanarComponentInfo}]}"
     |> Option.map Encode.string_of_objc_type
