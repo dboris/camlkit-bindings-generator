@@ -26,5 +26,6 @@
   camlkit-base
   markup
   lambdasoup
+  menhir
   alcotest)
  (tags (camlkit objc bindings macos ios cocoa gnustep)))
