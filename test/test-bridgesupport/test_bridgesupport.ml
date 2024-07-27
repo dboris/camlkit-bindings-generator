@@ -4,6 +4,13 @@ open Lib
 module A = Alcotest
 module B = Bridgesupport
 module S = Soup
+module M = Markup
+
+let parse_xml str =
+  M.string str
+  |> M.parse_xml
+  |> M.signals
+  |> S.from_signals
 
 let fw = "CoreGraphics"
 
@@ -61,10 +68,64 @@ let test_emit_CGPDFString () =
   in
   A.check A.(list string) "same type" expected actual
 
+let test_function_pointer () =
+  let expected = {|
+     (ptr CFAllocator.t)
+     @-> Foreign.funptr ((ptr FSEventStream.t)
+          @-> (ptr void)
+          @-> ullong
+          @-> (ptr void)
+          @-> (ptr uint)
+          @-> (ptr ullong)
+          @-> returning void)
+      @-> (ptr FSEventStreamContext.t)
+      @-> (ptr CFArray.t)
+      @-> ullong @-> double
+      @-> uint
+      @-> returning (ptr FSEventStream.t)
+      |}
+  |> String.split_on_char '\n'
+  |> List.map String.trim
+  |> List.filter ((<>)"")
+  |> String.concat " "
+  and actual =
+    {|
+     <function name='FSEventStreamCreate'>
+     <arg type64='^{__CFAllocator=}' type_modifier='n'/>
+     <arg function_pointer='true' type64='^?' type_modifier='n'>
+        <arg type64='^{__FSEventStream=}'/>
+        <arg type64='^v'/>
+        <arg type64='Q'/>
+        <arg type64='^v'/>
+        <arg type64='^I'/>
+        <arg type64='^Q'/>
+        <retval type64='v'/>
+     </arg>
+     <arg type64='^{FSEventStreamContext=q^v^?^?^?}' type_modifier='n'/>
+     <arg type64='^{__CFArray=}'/>
+     <arg type64='Q'/>
+     <arg type64='d'/>
+     <arg type64='I'/>
+     <retval already_retained='true' type64='^{__FSEventStream=}'/>
+     </function>
+     |}
+    |> parse_xml
+    |> S.select_one "function"
+    |> Option.get
+    |> B.func_type
+    |> String.split_on_char '\n'
+    |> List.map String.trim
+    |> List.filter ((<>)"")
+    |> List.map String.trim
+    |> String.concat " "
+  in
+  A.check A.string "alias" expected actual
+
 let suite =
   [ "test_CGAffineTransform", `Quick, test_emit_CGAffineTransform
   ; "test_emit_CGPDFArray", `Quick, test_emit_CGPDFArray
   ; "test_emit_CGPDFString", `Quick, test_emit_CGPDFString
+  ; "test_function_pointer", `Quick, test_function_pointer
   ]
 
 let () = A.run "Bridgesupport" [ "emit", suite ]
