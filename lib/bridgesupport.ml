@@ -221,31 +221,43 @@ let emit_struct fw x =
       |> Option.join
     with
     | Some (`Struct (tag_opt, field_list)) ->
+       let field_names =
+         field_list |> List.mapi @@ fun i (fname_opt, f_type) ->
+         fname_opt
+         |> Option.value ~default:("f" ^ string_of_int i)
+         |> valid_name
+         |> fun x -> (x, f_type)
+       in
       let tag_name = tag_opt |> Option.value ~default:name
       and accessors =
-        field_list |> List.mapi @@ fun i (fname_opt, _) ->
-          let fname =
-            fname_opt
-            |> Option.value ~default:("f" ^ string_of_int i)
-            |> valid_name
-          in
-          Printf.sprintf "let %s t = getf t %s" fname fname
+        field_names |> List.map @@ fun (fname, _) ->
+        Printf.sprintf "let %s t = getf t %s" fname fname
+      and init =
+        Printf.sprintf "let init"
+        :: (field_names |> List.map @@ fun (fname, obj_type) ->
+            match obj_type with
+            | `Pointer ptr ->
+               let typ = Encode.string_of_objc_type ptr in
+               Printf.sprintf "    ?%s:(%s_v = from_voidp %s null)"
+                 fname fname typ
+            | _ -> Printf.sprintf "    ~%s:%s_v" fname fname)
+        @ [ Printf.sprintf "    () =" ]
+        @ [ Printf.sprintf "  let t = make t in" ]
+        @ (field_names |> List.map @@ fun (fname, _) ->
+           Printf.sprintf "  setf t %s %s_v;" fname fname)
+        @ [ Printf.sprintf "t" ]
       in
       name,
       [ Printf.sprintf
           "let t : [`%s] structure typ = structure \"%s\"" name tag_name
       ; emit_doc_comment fw tag_name ^ "\n"
-      ] @
-      begin
-        field_list |> List.mapi (fun i (fname_opt, ty) ->
-          let fname =
-            fname_opt |> Option.value ~default:("f" ^ string_of_int i) in
+      ] @ (field_names |> List.map @@ fun (fname, ty) ->
           ty
           |> Encode.string_of_objc_type
           |> Printf.sprintf "let %s = field t \"%s\" %s" (valid_name fname) fname)
-      end @
-      [ "\nlet () = seal t\n" ] @
-      accessors
+        @  [ "\nlet () = seal t\n" ]
+        @ init
+        @ accessors
     | _ -> assert false
   with _ ->
     Printf.eprintf "Skipping struct %s...\n" name;
