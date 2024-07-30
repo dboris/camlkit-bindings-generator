@@ -218,6 +218,9 @@ let emit_globals_prelude fw =
     (* | "corefoundation" ->
       [ "open CoreFoundation_globals" ] *)
 
+    | "fsevents" ->
+      [ "open CoreFoundation" ]
+
     | "foundation" | "corevideo" ->
       [ "[@@@ocaml.warning \"-33\"]"
       ; "open CoreFoundation"
