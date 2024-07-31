@@ -7,6 +7,18 @@ exception GenerateError of string
 let funcs = ref []
 let inlines = ref []
 
+let type64_to_objc_type x =
+  try
+    S.attribute "type64" x
+    |> Option.map Encode.parse_type
+    |> Option.get
+    |> Option.get
+  with
+  | (Invalid_argument _) as e ->
+    Printf.eprintf
+    "type64_to_objc_type failed: %s\n" (S.attribute "name" x |> Option.get);
+    raise e
+
 let type64_to_objc_type_string x =
   try
     S.attribute "type64" x
@@ -51,18 +63,33 @@ let opaque_module_exception = function
 | "CGAffineTransform" -> true
 | _ -> false
 
+let structs = Hashtbl.create 13
+
+let emit_opaque_dep x name =
+  let ty = type64_to_objc_type x in
+  let is_ref = String.ends_with ~suffix:"Ref" name in
+  match is_ref, ty with
+  | true, `Pointer (`Type mod_name) ->
+     let mod_name = Str.replace_first (Str.regexp "^_+") "" mod_name in
+     if not (opaque_module_exception mod_name) then (
+       match Hashtbl.find_opt structs ty with
+       | Some true -> []
+       | _ ->
+          Hashtbl.add structs ty true;
+          [ Printf.sprintf "module %s = struct" mod_name
+          ; Printf.sprintf
+              "  let t : [`%s] structure typ = structure \"%s\""
+              mod_name mod_name
+          ; "end";
+          ]
+     ) else
+       []
+  | _ -> []
+
 let emit_opaque fw x =
   let name = Option.get (S.attribute "name" x)
-  and t = type64_to_objc_type_string x
-  in
-  let mod_name =
-    name
-    |> Str.replace_first (Str.regexp "Mutable") ""
-    |> Str.replace_first (Str.regexp "Ref$") ""
-  in
-  let self_ref = String.equal t ("(ptr " ^ name ^ ".t)")
-  and has_ref = String.equal name (mod_name ^ "Ref")
-  in
+  and t = type64_to_objc_type_string x in
+  let self_ref = String.equal t ("(ptr " ^ name ^ ".t)") in
   let result =
     [ Printf.sprintf "module %s = struct" name ] @
     begin
@@ -77,14 +104,7 @@ let emit_opaque fw x =
     end @
     [ "end\n" ]
   in
-  (* FIXME this logic is dangerous. Should emit only if struct not defined *)
-  if has_ref && not (opaque_module_exception mod_name) then
-    [ Printf.sprintf "module %s = struct" mod_name
-    ; Printf.sprintf
-        "  let t : [`%s] structure typ = structure \"%s\"" mod_name mod_name
-    ; "end"
-    ] @ result
-  else result
+  emit_opaque_dep x name @ result
 
 let emit_type_module fw mod_name =
   let filename = Printf.sprintf "data/%s/%s.ml" fw mod_name in
