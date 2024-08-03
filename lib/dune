@@ -10,7 +10,7 @@
   lib)
  (libraries
   lambdasoup
-  camlkit-base.runtime
+  camlkit-base.foundation
   str))
 
 (menhir (modules enc_parser))

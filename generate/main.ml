@@ -9,12 +9,14 @@ let fw_name = ref ""
 let gen_classes = ref ""
 let gen_methods = ref ""
 let include_superclass = ref false
+let load_fw = ref ""
 
 let speclist =
   [ ("-classes", Arg.Set_string gen_classes, "Generate classes in <lib>")
   ; ("-methods", Arg.Set_string gen_methods, "Generate methods in <class>")
   ; ("-super", Arg.Set include_superclass, "Include superclass methods in generated module")
-  ; ("-fw", Arg.Set_string fw_name, "Framework name")
+  ; ("-fw", Arg.Set_string fw_name, "Framework name <fw-name>")
+  ; ("-load", Arg.Set_string load_fw, "Load framework bundle <fw-path>")
   ]
 
 let () =
@@ -24,6 +26,7 @@ let () =
   and fw = !fw_name
   and include_superclass = !include_superclass
   in
+  Util.load_framework !load_fw;
   if not (String.equal lib "") then
     Inspect.library_class_names lib
     |> List.iter (fun cls ->

@@ -1,4 +1,4 @@
-open Foundation
+open Lib
 open Runtime
 
 let usage = {|
@@ -17,21 +17,12 @@ let speclist =
   ; ("-load", Arg.Set_string load_fw, "Load framework bundle <fw-path>")
   ]
 
-let load_framework () =
-  if not (String.equal !load_fw "") then
-    let bundle =
-      NSBundle._class_ |> NSBundle.C.bundleWithPath (new_string !load_fw) in
-    if is_nil bundle then
-      Printf.eprintf "Framework bundle not found!\n%!"
-    else
-      NSBundle.load bundle |> ignore
-
 let () =
   Arg.parse speclist ignore usage;
   let lib = !show_classes
   and cls = !show_methods
   in
-  load_framework ();
+  Util.load_framework !load_fw;
   if !show_libs then
     List.iter print_endline (Inspect.loaded_library_names ())
   else if not (String.equal lib "") then

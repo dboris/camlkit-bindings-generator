@@ -1,3 +1,6 @@
+open Foundation
+open Runtime
+
 exception Unsupported_type of string
 
 module String = struct
@@ -272,3 +275,13 @@ let emit_globals_prelude fw =
     fw
     |> String.concat "\n"
     |> Printf.printf "%s\n\n"
+;;
+
+let load_framework fw =
+  if not (String.equal fw "") then
+    let bundle =
+      NSBundle._class_ |> NSBundle.C.bundleWithPath (new_string fw) in
+    if is_nil bundle then
+      Printf.eprintf "Framework bundle not found!\n%!"
+    else
+      NSBundle.load bundle |> ignore

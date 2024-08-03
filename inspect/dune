@@ -2,4 +2,4 @@
  (name main)
  (public_name inspect-rt)
  (flags :standard -ccopt "-framework Cocoa")
- (libraries camlkit-base.foundation))
+ (libraries camlkit-base.runtime lib))
