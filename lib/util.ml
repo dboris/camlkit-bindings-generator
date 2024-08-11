@@ -285,3 +285,12 @@ let load_framework fw =
       Printf.eprintf "Framework bundle not found!\n%!"
     else
       NSBundle.load bundle |> ignore
+;;
+
+let class_image class_name =
+  let cls = Objc.get_class class_name in
+  if is_nil cls then
+    failwith "Class not found"
+  else
+    Inspect.Objc.get_image_name cls
+;;
