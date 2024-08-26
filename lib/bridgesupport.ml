@@ -106,17 +106,17 @@ let emit_opaque fw x =
   in
   emit_opaque_dep x name @ result
 
-let emit_type_module fw mod_name =
+let emit_type_module ~open_modules fw mod_name =
   let filename = Printf.sprintf "data/%s/%s.ml" fw mod_name in
   if not (Sys.file_exists filename) then
     let file = open_out filename in
-    emit_prelude ~fw file;
+    emit_prelude ~open_modules file;
     Printf.fprintf file
       "let t : [`%s] structure typ = structure \"%s\"\n" mod_name mod_name;
     Printf.fprintf file "%s" (emit_doc_comment fw mod_name);
     close_out file
 
-let emit_cftype fw x =
+let emit_cftype ~open_modules fw x =
   let name = Option.get (S.attribute "name" x)
   and t = type64_to_objc_type_string x
   in
@@ -128,7 +128,7 @@ let emit_cftype fw x =
     |> Str.replace_first (Str.regexp "Ref$") ""
   in
   if not is_mutable (* && not is_ref *) then
-    emit_type_module fw mod_name;
+    emit_type_module ~open_modules fw mod_name;
     (* begin
       (* First, emit a struct type module *)
       Printf.printf "module %s = struct\n" mod_name;

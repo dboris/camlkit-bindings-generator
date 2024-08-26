@@ -103,8 +103,7 @@ let emit_doc_comment ?(search=false) fw symbol =
       symbol
 ;;
 
-(* Prelude for `type` modules *)
-let emit_prelude ~fw file =
+let emit_prelude ~open_modules file =
   [ "(* auto-generated, do not modify *)\n"
   ; "open Runtime"
   ; "open Objc"
@@ -112,169 +111,10 @@ let emit_prelude ~fw file =
   |> String.concat "\n"
   |> Printf.fprintf file "%s\n\n";
 
-  let open_fw =
-    match String.lowercase_ascii fw with
-    (* | "corefoundation" ->
-      [ "open CoreFoundation_globals" ] *)
-
-    | "foundation" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreAnimation"
-      ; "open CoreAnimation_globals"
-      ; "open AppleEvents"
-      ; "open AppleEvents_globals"
-      ]
-
-    | "coregraphics" | "naturallanguage" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ]
-
-    | "coreanimation" | "photosui" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open UIKit"
-      ]
-
-    | "coreautolayout" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open Foundation"
-      ; "open CoreGraphics"
-      ]
-
-    | "appleevents" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open AppleEvents_globals"
-      ]
-
-    | "coreimage" | "coretext" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ]
-
-    | "spritekit" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreText"
-      ; "open CoreText_globals"
-      ]
-
-    | "vision" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreVideo"
-      ; "open CoreVideo_globals"
-      ]
-
-    | "uifoundation" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreAnimation"
-      ; "open CoreAnimation_globals"
-      ; "open CoreText"
-      ; "open CoreText_globals"
-      ; "open UIKit"
-      ]
-
-    | _ -> []
-  in
-  match open_fw with
+  match open_modules with
   | [] -> ()
-  | fw ->
-    fw
-    |> String.concat "\n"
-    |> Printf.fprintf file "%s\n\n"
-;;
-
-(* Prelude for the bridgesupport globals module only *)
-let emit_globals_prelude fw =
-  [ "(* auto-generated, do not modify *)\n"
-  ; "open Runtime"
-  ; "open Objc"
-  ]
-  |> String.concat "\n"
-  |> Printf.printf "%s\n\n";
-
-  let open_fw =
-    match String.lowercase_ascii fw with
-    (* | "corefoundation" ->
-      [ "open CoreFoundation_globals" ] *)
-
-    | "fsevents" ->
-      [ "open CoreFoundation" ]
-
-    | "foundation" | "corevideo" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreAnimation"
-      ; "open CoreAnimation_globals"
-      ]
-
-    | "coregraphics" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "\n"
-      ; "module ProcessSerialNumber = struct let t = void end"
-      ]
-
-    | "coreanimation" | "uifoundation" | "coretext" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ]
-
-    | "vision" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "open CoreFoundation_globals"
-      ; "open CoreGraphics"
-      ; "open CoreGraphics_globals"
-      ; "open CoreVideo"
-      ; "open CoreVideo_globals"
-      ]
-
-    | "appleevents" ->
-      [ "[@@@ocaml.warning \"-33\"]"
-      ; "open CoreFoundation"
-      ; "module AEArrayData  = struct let t = void end"
-      ]
-
-    | _ -> []
-  in
-  match open_fw with
-  | [] ->
-    Printf.eprintf "Not emitting globals prelude\n"
-  | fw ->
-    fw
-    |> String.concat "\n"
-    |> Printf.printf "%s\n\n"
+  | opens ->
+    String.concat "\n" opens |> Printf.fprintf file "%s\n\n"
 ;;
 
 let load_framework fw =
@@ -293,4 +133,13 @@ let class_image class_name =
     failwith "Class not found"
   else
     Inspect.Objc.get_image_name cls
+;;
+
+let open_modules mod_names =
+  if String.(equal mod_names empty) then
+    []
+  else
+    "[@@@ocaml.warning \"-33\"]"
+    ::
+    String.split_on_char ',' mod_names |> List.map ((^) "open ")
 ;;

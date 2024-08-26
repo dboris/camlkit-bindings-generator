@@ -189,11 +189,11 @@ let emit_method_bindings ?(pref = "") ~fw ~file bindings =
   |> Printf.fprintf file "%s%s" pref
 ;;
 
-let emit_metaclass_module ~fw cls cls' =
+let emit_metaclass_module ~open_modules ~fw cls cls' =
   let file = open_out (cls ^ "Class.ml")
   and meta = Object.get_class cls'
   in
-  emit_prelude ~fw file;
+  emit_prelude ~open_modules file;
   Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
   Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
 
@@ -207,6 +207,7 @@ let emit_class_module
   ~fw
   ?(include_superclass = false)
   ?(min_methods = 3)
+  ?(open_modules = [])
   cls
 =
   let cls' = Objc.get_class cls in
@@ -216,7 +217,7 @@ let emit_class_module
   |> fun bindings ->
     if List.length bindings >= min_methods then
       let file = open_out (cls ^ ".ml") in
-      emit_prelude ~fw file;
+      emit_prelude ~open_modules file;
       Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
       if include_superclass && not (is_null super) then begin
         let superclass = Class.get_name super in
@@ -226,7 +227,7 @@ let emit_class_module
         ) then
           Printf.fprintf file "include %s\n\n" superclass;
       end;
-      emit_metaclass_module ~fw cls cls';
+      emit_metaclass_module ~open_modules ~fw cls cls';
       emit_method_bindings ~fw ~file bindings;
       close_out file
 ;;
