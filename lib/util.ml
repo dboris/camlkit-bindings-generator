@@ -141,5 +141,5 @@ let open_modules mod_names =
   else
     "[@@@ocaml.warning \"-33\"]"
     ::
-    String.split_on_char ',' mod_names |> List.map ((^) "open ")
+    (String.split_on_char ',' mod_names |> List.map ((^) "open "))
 ;;
