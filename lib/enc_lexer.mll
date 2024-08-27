@@ -7,9 +7,10 @@
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z' '_']
+let proto = '<' _* '>'
 
 let num = digit+
-let tag = alpha (alpha | digit)+
+let tag = alpha (alpha | digit)+ proto?
 
 rule token = parse
   | '@' { ID }

@@ -126,6 +126,15 @@ let test_parse_array_of_struct () =
   A.check A.bool "Result is Option.some" true (Option.is_some actual);
   A.check A.string "same string" expected (Option.get actual)
 
+let test_parse_protocol () =
+  let expected = "String.t"
+  and actual =
+    Encode.parse_type "{String={RefPtr<WTF::StringImpl>=^{StringImpl}}}"
+    |> Option.map Encode.string_of_objc_type
+  in
+  A.check A.bool "Result is Option.some" true (Option.is_some actual);
+  A.check A.string "same string" expected (Option.get actual)
+
 let suite =
   [ "parse int", `Quick, test_parse_int
   ; "parse ptr float", `Quick, test_parse_ptr_float
@@ -142,6 +151,7 @@ let suite =
   ; "parse and encode CA_Mode", `Quick, test_CA_Mode
   ; "parse VectorField", `Quick, test_parse_VectorField
   ; "parse array_of_struct", `Quick, test_parse_array_of_struct
+  ; "parse protocol", `Quick, test_parse_protocol
   ]
 
 let () = A.run "Enc parser tests" [ "Encode", suite ]
