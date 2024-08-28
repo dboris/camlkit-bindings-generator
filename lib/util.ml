@@ -24,6 +24,10 @@ let is_upper c =
 
 let apply_type_exceptions = function
 | "NSZone" | "acl" | "stat" | "xpc_type_s" | "objc_method_description"
+| "AEDesc" | "addrinfo" | "CFStorage" | "FloatPoint" | "IntRect" | "IntPoint"
+| "Object" | "String" | "SecTrust" | "OpaqueWKContext"
+| "OpaqueWKPageGroup" | "OpaqueWKPage" | "OpaqueWKBackForwardListItem"
+| "OpaqueWKInspector" | "OpaqueWKFrame" | "OpaqueWKPageConfiguration"
 | "xmlNode" | "xmlParserCtxt" | "xmlElementContent" | "xmlTextReader" | "xmlDoc"
 | "NSRefCountedRunArray" | "NSProgressFraction" | "NSSlice" | "SKCAction"
 | "NSAppleEventManagerSuspension" | "opaque_pthread_mutex_t" | "CGImageProvider"
