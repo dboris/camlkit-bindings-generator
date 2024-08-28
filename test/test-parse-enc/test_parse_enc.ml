@@ -127,9 +127,9 @@ let test_parse_array_of_struct () =
   A.check A.string "same string" expected (Option.get actual)
 
 let test_parse_protocol () =
-  let expected = "String.t"
+  let expected = "StringTag.t"
   and actual =
-    Encode.parse_type "{String={RefPtr<WTF::StringImpl>=^{StringImpl}}}"
+    Encode.parse_type "{StringTag={RefPtr<WTF::StringImpl>=^{StringImpl}}}"
     |> Option.map Encode.string_of_objc_type
   in
   A.check A.bool "Result is Option.some" true (Option.is_some actual);
