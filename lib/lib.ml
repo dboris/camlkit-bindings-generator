@@ -206,7 +206,7 @@ let emit_metaclass_module ~open_modules ~fw cls cls' =
 let emit_class_module
   ~fw
   ?(include_superclass = false)
-  ?(min_methods = 3)
+  ?(min_methods = 2)
   ?(open_modules = [])
   cls
 =

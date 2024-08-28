@@ -26,7 +26,6 @@ let parse_type str =
     None
 ;;
 
-(* FIXME refacor: intermediat type *)
 let tag_name_to_type name =
   let remove_leading_underscores str =
     Str.replace_first (Str.regexp "^_+") "" str

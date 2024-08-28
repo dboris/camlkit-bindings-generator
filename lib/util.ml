@@ -39,6 +39,8 @@ let apply_type_exceptions = function
 | ty ->
   if String.contains ty '_' then
     raise (Unsupported_type ty)
+  else if String.contains ty '<' then
+    "id"  (* protocol-implementing types are object pointers *)
   else
     ty
 
