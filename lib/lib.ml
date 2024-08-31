@@ -190,17 +190,20 @@ let emit_method_bindings ?(pref = "") ~fw ~file bindings =
 ;;
 
 let emit_metaclass_module ~open_modules ~fw cls cls' =
-  let file = open_out (cls ^ "Class.ml")
-  and meta = Object.get_class cls'
+  let methods =
+    Object.get_class cls'
+    |> Inspect.methods
+    |> List.filter_map method_binding
+    |> List.filter (fun {name; _} -> not (Util.ignored_class_method name))
   in
-  emit_prelude ~open_modules file;
-  Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
-  Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
-
-  Inspect.methods meta
-  |> List.filter_map method_binding
-  |> emit_method_bindings ~fw ~file;
-  close_out file
+  match methods with
+  | [] -> ()
+  | methods' ->
+    let file = open_out (cls ^ "Class.ml") in
+    emit_prelude ~open_modules file;
+    Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
+    emit_method_bindings ~fw ~file methods';
+    close_out file
 ;;
 
 let emit_class_module
@@ -219,6 +222,8 @@ let emit_class_module
       let file = open_out (cls ^ ".ml") in
       emit_prelude ~open_modules file;
       Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
+      Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
+
       if include_superclass && not (is_null super) then begin
         let superclass = Class.get_name super in
         if (
@@ -227,6 +232,7 @@ let emit_class_module
         ) then
           Printf.fprintf file "include %s\n\n" superclass;
       end;
+
       emit_metaclass_module ~open_modules ~fw cls cls';
       emit_method_bindings ~fw ~file bindings;
       close_out file

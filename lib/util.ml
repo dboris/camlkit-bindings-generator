@@ -64,6 +64,10 @@ let is_private sel =
   Char.equal (String.get sel 0) '.' || String.contains sel '_'
 ;;
 
+let ignored_class_method = function
+| "alloc" | "new_" | "allocWithZone" -> true
+| _ -> false
+
 let valid_name name =
   if is_upper (String.get name 0) then "_" ^ name
   else if is_reserved name then name ^ "_"
