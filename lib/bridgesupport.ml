@@ -248,6 +248,11 @@ let emit_struct fw x =
           |> valid_name
           |> fun x -> (x, f_type)
       in
+      let has_pointer_field =
+        field_names |> List.exists @@ function
+          | (_, `Pointer _) -> true
+          | _ -> false
+      in
       let tag_name = tag_opt |> Option.value ~default:name
       and accessors =
         field_names |> List.map @@ fun (fname, _) ->
@@ -261,7 +266,7 @@ let emit_struct fw x =
                 fname fname typ
             | _ ->
               Printf.sprintf "    ~%s:%s_v" fname fname)
-        @ [ "    () ="
+        @ [ if has_pointer_field then "    () =" else "    ="
           ; "  let t = make t in"
           ]
         @ (field_names |> List.map @@ fun (fname, _) ->
