@@ -22,7 +22,7 @@ let is_upper c =
   code >= 65 && code <= 90
 ;;
 
-let apply_type_exceptions = function
+let apply_type_exceptions ?(allow_underscore = true) = function
 | "NSZone" | "acl" | "stat" | "xpc_type_s" | "objc_method_description"
 | "AEDesc" | "addrinfo" | "CFStorage" | "FloatPoint" | "IntRect" | "IntPoint"
 | "Object" | "String" | "SecTrust" | "OpaqueWKContext" | "ProcessSerialNumber"
@@ -41,7 +41,7 @@ let apply_type_exceptions = function
 | "GLKVector2" | "GLKVector3" | "GLKVector4" | "CCRange" as ty ->
   raise (Unsupported_type ty)
 | ty ->
-  if String.contains ty '_' then
+  if not allow_underscore && String.contains ty '_' then
     raise (Unsupported_type ty)
   else if String.contains ty '<' then
     "id"  (* protocol-implementing types are object pointers *)

@@ -135,6 +135,12 @@ let test_parse_protocol () =
   A.check A.bool "Result is Option.some" true (Option.is_some actual);
   A.check A.string "same string" expected (Option.get actual)
 
+let test_parse_vImage_Buffer () =
+  let expected = `Pointer (`Type "vImage_Buffer")
+  and actual = Encode.parse_type "^{vImage_Buffer=^vQQQ}" in
+  A.check A.bool "Result is Option.some" true (Option.is_some actual);
+  A.check objc_type "same type" expected (Option.get actual)
+
 let suite =
   [ "parse int", `Quick, test_parse_int
   ; "parse ptr float", `Quick, test_parse_ptr_float
@@ -152,6 +158,7 @@ let suite =
   ; "parse VectorField", `Quick, test_parse_VectorField
   ; "parse array_of_struct", `Quick, test_parse_array_of_struct
   ; "parse protocol", `Quick, test_parse_protocol
+  ; "parse protocol", `Quick, test_parse_vImage_Buffer
   ]
 
 let () = A.run "Enc parser tests" [ "Encode", suite ]
