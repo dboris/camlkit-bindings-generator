@@ -33,12 +33,16 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "NSAppleEventManagerSuspension" | "opaque_pthread_mutex_t" | "CGImageProvider"
 | "opaqueCMSampleBuffer" | "EPolygonList" | "MRCDescriptor" | "sFILE"
 | "CCColorProfileContext" | "CCCharBox" | "CCBigBox" | "CCBox" | "FSRef"
-| "CCPulseWindowContext" | "rgbaColor" | "rgbMinMaxU8" | "rgbMinMaxFloat" ->
+| "CCPulseWindowContext" | "rgbaColor" | "rgbMinMaxU8" | "rgbMinMaxFloat"
+| "CVBuffer" | "CGImageSource" | "CGImageMetadata" | "CGSRegionObject"
+| "vImage_Buffer" | "SerialObjectPtrArray" | "filterShape" ->
   "void"
 | "va_list_tag" ->
   "(ptr void)"
 | "NLConstraintParameters" | "GLKMatrix2" | "GLKMatrix3" | "GLKMatrix4"
-| "GLKVector2" | "GLKVector3" | "GLKVector4" | "CCRange" as ty ->
+| "GLKVector2" | "GLKVector3" | "GLKVector4" | "CCRange"
+| "vec2" | "vec3" | "vec4" | "Texture" | "Rectangle"
+| "CIPredictionModelImageFeatures" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
