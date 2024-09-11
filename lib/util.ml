@@ -168,3 +168,9 @@ let open_modules mod_names =
     ::
     (String.split_on_char ',' mod_names |> List.map ((^) "open "))
 ;;
+
+let safe_enum_value = function
+| "18446744073709551615" -> "ULong.max_int"
+| "9223372036854775808" -> "LLong.max_int"
+| "9223372036854775807" -> "LLong.(pred max_int)"
+| v -> v

@@ -21,7 +21,9 @@ let emit ~open_modules fw x =
   | "function" -> emit_func fw x
   | "opaque" -> emit_opaque fw x |> List.iter print_endline
   | "cftype" -> emit_cftype ~open_modules fw x
-  | n -> Printf.eprintf "Not emiting %s\n" n
+  | _n ->
+    (* Printf.eprintf "Not emiting %s\n" n *)
+    ()
 ;;
 
 let usage = "bs-to-ml -fw <framework-name> < <FW.bridgesupport>"

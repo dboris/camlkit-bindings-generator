@@ -57,7 +57,7 @@ let emit_enum x =
     in
     Printf.printf "let %s = %s\n"
       (if is_upper (String.get name 0) then "_" ^ name else name)
-      v
+      (safe_enum_value v)
 
 let opaque_module_exception = function
 | "CGAffineTransform" -> true
