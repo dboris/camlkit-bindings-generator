@@ -23,9 +23,9 @@
   dune
   ctypes
   ctypes-foreign
-  camlkit-base
+  (camlkit-base (>= "0.2.0"))
   markup
   lambdasoup
   menhir
-  alcotest)
+  (alcotest :with-test))
  (tags (camlkit objc bindings macos ios cocoa gnustep)))

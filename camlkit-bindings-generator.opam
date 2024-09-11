@@ -16,11 +16,11 @@ depends: [
   "dune" {>= "3.13"}
   "ctypes"
   "ctypes-foreign"
-  "camlkit-base"
+  "camlkit-base" {>= "0.2.0"}
   "markup"
   "lambdasoup"
   "menhir"
-  "alcotest"
+  "alcotest" {with-test}
   "odoc" {with-doc}
 ]
 build: [
