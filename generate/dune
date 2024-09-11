@@ -1,4 +1,4 @@
 (executable
  (name main)
  (public_name generate-ml)
- (libraries camlkit-base.foundation lib))
+ (libraries camlkit-base.runtime lib))

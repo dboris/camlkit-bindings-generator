@@ -35,14 +35,25 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "CCColorProfileContext" | "CCCharBox" | "CCBigBox" | "CCBox" | "FSRef"
 | "CCPulseWindowContext" | "rgbaColor" | "rgbMinMaxU8" | "rgbMinMaxFloat"
 | "CVBuffer" | "CGImageSource" | "CGImageMetadata" | "CGSRegionObject"
-| "vImage_Buffer" | "SerialObjectPtrArray" | "filterShape" ->
+| "vImage_Buffer" | "SerialObjectPtrArray" | "filterShape" | "CC_MD5state_st"
+| "mapped_model_file" | "FastRegistration_Signatures" | "AuthorizationOpaqueRef"
+| "OpaqueCUIRendererRef" | "SpeechChannelRecord" | "RXRecognitionSystem"
+| "CGSnappingInfo" | "LSASN" | "OpaqueLSSharedFileListRef" | "CGLPBufferObject"
+| "OpaqueWindowPtr" | "EventTypeSpec" | "OpaqueIconRef" | "OpaqueCoreDrag"
+| "OpaqueEventRef" | "OpaqueMenuRef" | "TISInputSource" | "WorkspaceKVOData_t"
+| "OpaqueHIPresentationInstanceRef" | "OpaqueATSUStyle" | "AXUIElement"
+| "SLMPopUpMenuContext_t" | "RXRecognizer" | "GSEvent" | "GSKeyboard"
+| "IOHIDEvent" | "UIWebTouchEvent" ->
   "void"
 | "va_list_tag" ->
   "(ptr void)"
 | "NLConstraintParameters" | "GLKMatrix2" | "GLKMatrix3" | "GLKMatrix4"
 | "GLKVector2" | "GLKVector3" | "GLKVector4" | "CCRange"
-| "vec2" | "vec3" | "vec4" | "Texture" | "Rectangle"
-| "CIPredictionModelImageFeatures" as ty ->
+| "vec2" | "vec3" | "vec4" | "Texture" | "Rectangle" | "Options" | "Point"
+| "NSKeyValueCodingControllerModeType" | "NSToolbarFullScreenContentViewLayout_t"
+| "CIPredictionModelImageFeatures" | "Geometry2D_rect2D_" | "UIRectCornerRadii"
+| "UITableConstantsBackgroundProperties" | "UIPeripheralAnimationGeometry"
+| "ITColor" | "mach_right_send" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
@@ -134,7 +145,7 @@ let emit_prelude ~open_modules file =
 let load_framework fw =
   if not (String.equal fw "") then
     let bundle =
-      NSBundle._class_ |> NSBundle.C.bundleWithPath (new_string fw) in
+      NSBundle.self |> NSBundleClass.bundleWithPath (new_string fw) in
     if is_nil bundle then
       Printf.eprintf "Framework bundle not found!\n%!"
     else
