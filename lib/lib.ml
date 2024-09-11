@@ -66,7 +66,7 @@ let converted_arg name = function
 | "ullong" -> "(ULLong.of_int " ^ name ^ ")"
 | _ -> name
 
-let string_of_method_binding ~fw {name; args; sel; typ} =
+let string_of_method_binding {name; args; sel; typ} =
   match args with
   | [] ->
     (* no args *)
@@ -121,7 +121,6 @@ let string_of_method_binding ~fw {name; args; sel; typ} =
       end
 
     | Stret (typ, ret_ty, arg_types) ->
-      "\n" ^ emit_doc_comment fw sel ^
       let conv_args = List.map2 converted_arg args arg_types in
       Printf.sprintf
         "let %s x %s self = msg_send_stret ~self ~cmd:(selector \"%s\") ~typ:(%s) ~return_type:%s %s"
@@ -190,11 +189,11 @@ let disambiguate mbs =
   |> List.of_seq
 ;;
 
-let emit_method_bindings ?(pref = "") ~fw ~file bindings =
+let emit_method_bindings ?(pref = "") ~file bindings =
   bindings
   |> List.sort_uniq compare_sel
   |> disambiguate
-  |> List.map (string_of_method_binding ~fw)
+  |> List.map string_of_method_binding
   |> String.concat ("\n" ^ pref)
   |> Printf.fprintf file "%s%s" pref
 ;;
@@ -212,7 +211,7 @@ let emit_metaclass_module ~open_modules ~fw cls cls' =
     let file = open_out (cls ^ "Class.ml") in
     emit_prelude ~open_modules file;
     Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
-    emit_method_bindings ~fw ~file methods';
+    emit_method_bindings ~file methods';
     close_out file
 ;;
 
@@ -244,6 +243,6 @@ let emit_class_module
       end;
 
       emit_metaclass_module ~open_modules ~fw cls cls';
-      emit_method_bindings ~fw ~file bindings;
+      emit_method_bindings ~file bindings;
       close_out file
 ;;
