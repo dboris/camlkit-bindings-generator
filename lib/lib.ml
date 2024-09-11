@@ -43,12 +43,22 @@ let method_type m =
           (Method.get_argument_type m (Unsigned.UInt.of_int i));
         "ptr void"
   in
-  Normal
-    ( String.concat " @-> " arg_types ^
-      (if num_args > 2 then " @-> " else "") ^
-      "returning " ^ Encode.enc_to_ctype_string (Method.get_return_type m)
-    , arg_types
-    )
+  let ret = Method.get_return_type m in
+  try
+    Normal
+      ( String.concat " @-> " arg_types ^
+        (if num_args > 2 then " @-> " else "") ^
+        "returning " ^ Encode.enc_to_ctype_string ~raise_on_struct:true ret
+      , arg_types
+      )
+  with Encode.Encode_struct ret_ty ->
+    Stret
+      ( String.concat " @-> " arg_types ^
+        (if num_args > 2 then " @-> " else "") ^
+        "returning " ^ Encode.enc_to_ctype_string ret
+      , ret_ty
+      , arg_types
+      )
 ;;
 
 let converted_arg name = function

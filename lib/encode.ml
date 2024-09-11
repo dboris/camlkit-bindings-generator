@@ -39,7 +39,7 @@ let tag_name_to_type name =
   |> append_dot_t
 ;;
 
-let rec string_of_objc_type : Objc_type.t -> string = function
+let rec string_of_objc_type ?(raise_on_struct = false) ty = match ty with
 | `Id -> "id"
 | `Class -> "_Class"
 | `Sel -> "_SEL"
@@ -65,10 +65,12 @@ let rec string_of_objc_type : Objc_type.t -> string = function
 | `Type name -> tag_name_to_type name
 | `Struct (tag_opt, _fields) ->
   (* string option * (string option * t) list *)
-  if Option.is_some tag_opt then
+  begin match raise_on_struct with
+  | true ->
+    raise (Encode_struct (Option.get tag_opt |> tag_name_to_type))
+  | false ->
     Option.get tag_opt |> tag_name_to_type
-  else
-    raise (Encode_struct "Missing tag")
+  end
 | `Array (_n, t) ->
   (* A C array type is a pointer *)
   "(ptr " ^ string_of_objc_type t ^ ")"
@@ -77,7 +79,7 @@ let rec string_of_objc_type : Objc_type.t -> string = function
     if Option.is_some tag_opt then
       Option.get tag_opt |> tag_name_to_type
     else
-      raise (Encode_struct "Missing tag")
+      raise (Encode_type "Missing tag")
 ;;
 
 let type64_to_ctype_string ty_str =
@@ -92,10 +94,7 @@ let type64_to_ctype_string ty_str =
     Printexc.print_backtrace stderr;
     raise e)
 
-let enc_to_ctype_string enc =
-  match type64_to_ctype_string enc with
-  | "" ->
-    (Printf.eprintf "Parse type error: %s\n%!" enc;
-    Printexc.print_backtrace stderr;
-    raise (Encode_type enc))
-  | ty -> ty
+let enc_to_ctype_string ?(raise_on_struct = false) enc =
+  parse_type enc
+  |> Option.map (string_of_objc_type ~raise_on_struct)
+  |> Option.get
