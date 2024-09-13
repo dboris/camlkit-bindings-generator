@@ -34,7 +34,7 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "opaqueCMSampleBuffer" | "EPolygonList" | "MRCDescriptor" | "sFILE"
 | "CCColorProfileContext" | "CCCharBox" | "CCBigBox" | "CCBox" | "FSRef"
 | "CCPulseWindowContext" | "rgbaColor" | "rgbMinMaxU8" | "rgbMinMaxFloat"
-| "CVBuffer" | "CGImageSource" | "CGImageMetadata" | "CGSRegionObject"
+| "CGImageSource" | "CGImageMetadata" | "CGSRegionObject"
 | "vImage_Buffer" | "SerialObjectPtrArray" | "filterShape" | "CC_MD5state_st"
 | "mapped_model_file" | "FastRegistration_Signatures" | "AuthorizationOpaqueRef"
 | "OpaqueCUIRendererRef" | "SpeechChannelRecord" | "RXRecognitionSystem"
@@ -55,7 +55,7 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "UITableConstantsBackgroundProperties" | "UIPeripheralAnimationGeometry"
 | "ITColor" | "mach_right_send" | "PUSimpleIndexPath" | "PXSimpleIndexPath"
 | "PHDisplayVelocity" | "PXAssetMediaTypeCount" | "PXAssetBadgeInfo"
-| "PUGridCoordinates" | "PUDisplayVelocity" as ty ->
+| "PUGridCoordinates" | "PUDisplayVelocity" | "CTGlyphStorage" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
