@@ -53,7 +53,9 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "NSKeyValueCodingControllerModeType" | "NSToolbarFullScreenContentViewLayout_t"
 | "CIPredictionModelImageFeatures" | "Geometry2D_rect2D_" | "UIRectCornerRadii"
 | "UITableConstantsBackgroundProperties" | "UIPeripheralAnimationGeometry"
-| "ITColor" | "mach_right_send" as ty ->
+| "ITColor" | "mach_right_send" | "PUSimpleIndexPath" | "PXSimpleIndexPath"
+| "PHDisplayVelocity" | "PXAssetMediaTypeCount" | "PXAssetBadgeInfo"
+| "PUGridCoordinates" | "PUDisplayVelocity" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
