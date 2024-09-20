@@ -43,7 +43,8 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "OpaqueEventRef" | "OpaqueMenuRef" | "TISInputSource" | "WorkspaceKVOData_t"
 | "OpaqueHIPresentationInstanceRef" | "OpaqueATSUStyle" | "AXUIElement"
 | "SLMPopUpMenuContext_t" | "RXRecognizer" | "GSEvent" | "GSKeyboard"
-| "IOHIDEvent" | "UIWebTouchEvent" ->
+| "IOHIDEvent" | "UIWebTouchEvent"
+| "sqlite3" | "sqlite3_stmt" | "sqlite3_value" ->
   "void"
 | "va_list_tag" ->
   "(ptr void)"
@@ -55,7 +56,8 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "UITableConstantsBackgroundProperties" | "UIPeripheralAnimationGeometry"
 | "ITColor" | "mach_right_send" | "PUSimpleIndexPath" | "PXSimpleIndexPath"
 | "PHDisplayVelocity" | "PXAssetMediaTypeCount" | "PXAssetBadgeInfo"
-| "PUGridCoordinates" | "PUDisplayVelocity" | "CTGlyphStorage" as ty ->
+| "PUGridCoordinates" | "PUDisplayVelocity" | "CTGlyphStorage"
+| "MIORange" | "IMFileSize" | "AKQuadrilateral" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
