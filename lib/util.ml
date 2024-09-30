@@ -134,6 +134,7 @@ let emit_doc_comment ?(search=false) fw symbol =
 
 let emit_prelude ~open_modules file =
   [ "(* auto-generated, do not modify *)\n"
+  ; "[@@@ocaml.warning \"-33\"]"
   ; "open Runtime"
   ; "open Objc"
   ]
@@ -168,8 +169,6 @@ let open_modules mod_names =
   if String.(equal mod_names empty) then
     []
   else
-    "[@@@ocaml.warning \"-33\"]"
-    ::
     (String.split_on_char ',' mod_names |> List.map ((^) "open "))
 ;;
 
