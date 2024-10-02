@@ -94,8 +94,10 @@ let is_private sel =
   Char.equal (String.get sel 0) '.' || String.contains sel '_'
 ;;
 
-let ignored_class_method = function
-| "alloc" | "new_" | "allocWithZone" -> true
+let ignored_class_method cls = function
+| "alloc" | "new_" | "allocWithZone" | "copyWithZone" ->
+  (* only emit these methods for NSObject *)
+  not (String.equal cls "NSObject")
 | _ -> false
 
 let valid_name name =

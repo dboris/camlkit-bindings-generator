@@ -191,7 +191,7 @@ let emit_metaclass_module ~open_modules ~fw cls cls' =
     Object.get_class cls'
     |> Inspect.methods
     |> List.filter_map method_binding
-    |> List.filter (fun {name; _} -> not (Util.ignored_class_method name))
+    |> List.filter (fun {name; _} -> not (Util.ignored_class_method cls name))
   in
   match methods with
   | [] -> ()
