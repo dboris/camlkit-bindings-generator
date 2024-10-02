@@ -67,6 +67,17 @@ let apply_type_exceptions ?(allow_underscore = true) = function
   else
     ty
 
+let unsupported_method = function
+| "evaluateCost" | "evaluateCostXZ" | "evaluateCostYZ"
+| "valueWithVectorFloat2" | "valueWithVectorFloat3" | "valueWithVectorFloat4"
+| "setVectorFloat2Value" | "setVectorFloat3Value" | "setVectorFloat4Value"
+| "linearGravityFieldWithVector" | "velocityFieldWithVector"
+| "setDirection" | "setEulerAngles" | "setVelocity"
+| "addPoint" | "emitPoint" | "setLastPoint"
+| "enumerateInterpolationFromPoint" ->
+  true
+| _ -> false
+
 let is_reserved = function
 | "and" | "as" | "assert" | "asr" | "begin" | "class" | "constraint" | "do"
 | "done" | "downto" | "else" | "end" | "exception" | "external" | "false"

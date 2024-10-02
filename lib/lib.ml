@@ -6,8 +6,6 @@ module Objc_type = Objc_type
 module Util = Util
 module Bridgesupport = Bridgesupport
 
-exception Broken_binding of string
-
 type msg_type =
 | Stret of string * string * string list  (* typ, ret_ty, arg_types *)
 | Normal of string * string list  (* typ, arg_types *)
@@ -143,22 +141,12 @@ let method_binding m  =
   if is_private sel then
     Option.none
   else
-    try
-      let name, args = split_selector sel in
-      match name with
-      | "evaluateCost" | "evaluateCostXZ" | "evaluateCostYZ"
-      | "valueWithVectorFloat2" | "valueWithVectorFloat3" | "valueWithVectorFloat4"
-      | "setVectorFloat2Value" | "setVectorFloat3Value" | "setVectorFloat4Value"
-      | "linearGravityFieldWithVector" | "velocityFieldWithVector"
-      | "setDirection" | "setEulerAngles" | "setVelocity"
-      | "addPoint" | "emitPoint" | "setLastPoint" | "enumerateInterpolationFromPoint" ->
-        raise (Broken_binding name)
-      | _ ->
-        Option.some
-          {name; args = disambiguate_args args; sel; typ = method_type m}
-    with exn ->
-      Printf.eprintf "Non-fatal exn: %s\n%!" (Printexc.to_string exn);
+    let name, args = split_selector sel in
+    if unsupported_method name then
       Option.none
+    else
+      Option.some
+        {name; args = disambiguate_args args; sel; typ = method_type m}
 ;;
 
 let eq_name mb {name; _} = String.equal mb.name name
