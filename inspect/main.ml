@@ -33,6 +33,6 @@ let () =
   else if not (String.equal cls_img "") then
     print_endline (Util.class_image cls_img)
   else if not (String.equal cls "") then
-    failwith "TODO"
+    List.iter print_endline (Inspect.method_names (Objc.get_class cls))
   else
     print_endline usage
