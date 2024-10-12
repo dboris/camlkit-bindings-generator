@@ -82,7 +82,11 @@ let rec string_of_objc_type ?(raise_on_struct = false) ty = match ty with
     else
       raise (Encode_type "Missing tag")
 | `Method (args, ret) ->
-  (List.map string_of_objc_type args |> String.concat " @-> ") ^
+  (args
+  |> List.tl  (* skip self *)
+  |> List.tl  (* skip cmd *)
+  |> List.map string_of_objc_type
+  |> String.concat " @-> ") ^
   " @-> returning (" ^ string_of_objc_type ret ^ ")"
 ;;
 

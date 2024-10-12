@@ -239,7 +239,7 @@ let emit_protocols ~open_modules =
   Inspect.registered_protocols ()
   |> List.iter @@ fun p ->
     let pname = Protocol.get_name p in
-    if not (String.begins_with_char '_' pname) then begin
+    if not (String.begins_with_char '_' pname) then
       match Inspect.protocol_methods p with
       | [] -> ()
       | methods ->
@@ -248,12 +248,12 @@ let emit_protocols ~open_modules =
         methods
         |> List.iter (fun m ->
           let cmd = Objc.Method_description.name m in
-          let name = cmd |> String.split_on_char ':' |> String.concat "'"
-          and enc = Objc.Method_description.types m in
-          Encode.parse_type ~is_method:true enc
-          |> Option.iter (fun typ ->
-              Printf.fprintf file
-                "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
-                (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
+          if not (String.begins_with_char '_' cmd) then
+            let name = cmd |> String.split_on_char ':' |> String.concat "'"
+            and enc = Objc.Method_description.types m in
+            Encode.parse_type ~is_method:true enc
+            |> Option.iter (fun typ ->
+                Printf.fprintf file
+                  "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
+                  (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
         close_out file
-    end
