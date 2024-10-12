@@ -235,7 +235,7 @@ let emit_class_module
       close_out file
 ;;
 
-let emit_protocols ~open_modules =
+(* let emit_protocols ~open_modules =
   Inspect.registered_protocols ()
   |> List.iter @@ fun p ->
     let pname = Protocol.get_name p in
@@ -256,4 +256,4 @@ let emit_protocols ~open_modules =
                 Printf.fprintf file
                   "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
                   (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
-        close_out file
+        close_out file *)

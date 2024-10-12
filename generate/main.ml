@@ -46,6 +46,7 @@ let () =
   else if not (String.equal cls "") then
     emit_class_module cls ~fw ~include_superclass ~open_modules
   else if proto then
-    emit_protocols ~open_modules
+    (* emit_protocols ~open_modules *)
+    failwith "Disabled until next release of camlkit"
   else
     print_endline usage
