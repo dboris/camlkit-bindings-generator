@@ -7,12 +7,15 @@
 %token ID CLASS SEL VOID STRING POINTER BLOCK
 %token BOOL UCHAR INT UINT SHORT USHORT LONG ULONG LLONG ULLONG
 %token FLOAT DOUBLE LDOUBLE
-%token L_BRACE R_BRACE L_BRACKET R_BRACKET L_PAREN R_PAREN (* EQUAL *)
+%token L_BRACE R_BRACE L_BRACKET R_BRACKET L_PAREN R_PAREN
 %token UNKNOWN EOF BITFIELD
-%start <Objc_type.t option> prog
+// %token EQUAL
+
+%start <Objc_type.t option> nonmeth
+%start <Objc_type.t option> meth
 %%
 
-prog:
+nonmeth:
   | x = typ { Some x }
   | EOF { None };
 
@@ -51,3 +54,10 @@ struct_fields:
 
 tag: TAG { $1 };
 field: FIELD { $1 };
+
+meth:
+  | x = meth_sig { Some x }
+  | EOF { None };
+
+meth_sig: x = meth_arg; xs = meth_arg+; EOF { `Method (xs, x) };
+meth_arg: x = typ; NUM { x };

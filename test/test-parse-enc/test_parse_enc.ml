@@ -141,6 +141,12 @@ let test_parse_vImage_Buffer () =
   A.check A.bool "Result is Option.some" true (Option.is_some actual);
   A.check objc_type "same type" expected (Option.get actual)
 
+let test_parse_method_sig () =
+  let expected = `Method ([`Id; `Sel; `Id; `Llong], `Id)
+  and actual = Encode.parse_type ~is_method:true "@32@0:8@16q24" in
+  A.check A.bool "Result is Option.some" true (Option.is_some actual);
+  A.check objc_type "same type" expected (Option.get actual)
+
 let suite =
   [ "parse int", `Quick, test_parse_int
   ; "parse ptr float", `Quick, test_parse_ptr_float
@@ -158,7 +164,8 @@ let suite =
   ; "parse VectorField", `Quick, test_parse_VectorField
   ; "parse array_of_struct", `Quick, test_parse_array_of_struct
   ; "parse protocol", `Quick, test_parse_protocol
-  ; "parse protocol", `Quick, test_parse_vImage_Buffer
+  ; "parse vImage_Buffer", `Quick, test_parse_vImage_Buffer
+  ; "parse method sig", `Quick, test_parse_method_sig
   ]
 
 let () = A.run "Enc parser tests" [ "Encode", suite ]

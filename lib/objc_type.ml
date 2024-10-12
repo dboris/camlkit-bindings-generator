@@ -26,4 +26,5 @@ type t =
   | `Struct of string option * (string option * t) list
   | `Union of string option * (string option * t) list
   | `Array of int * t
+  | `Method of t list * t
   ]

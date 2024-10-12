@@ -221,7 +221,7 @@ let emit_class_module
       Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
       Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
 
-      if include_superclass && not (is_null super) then begin
+      if include_superclass && not (is_nil super) then begin
         let superclass = Class.get_name super in
         if (
           String.starts_with ~prefix:"NS" superclass &&
@@ -234,3 +234,26 @@ let emit_class_module
       emit_method_bindings ~file bindings;
       close_out file
 ;;
+
+let emit_protocols ~open_modules =
+  Inspect.registered_protocols ()
+  |> List.iter @@ fun p ->
+    let pname = Protocol.get_name p in
+    if not (String.begins_with_char '_' pname) then begin
+      match Inspect.protocol_methods p with
+      | [] -> ()
+      | methods ->
+        let file = open_out (pname ^ ".ml") in
+        emit_prelude ~open_modules file;
+        methods
+        |> List.iter (fun m ->
+          let cmd = Objc.Method_description.name m in
+          let name = cmd |> String.split_on_char ':' |> String.concat "'"
+          and enc = Objc.Method_description.types m in
+          Encode.parse_type ~is_method:true enc
+          |> Option.iter (fun typ ->
+              Printf.fprintf file
+                "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
+                (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
+        close_out file
+    end

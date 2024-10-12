@@ -13,9 +13,10 @@ let print_position outx lexbuf =
     pos.pos_lnum
     (pos.pos_cnum - pos.pos_bol + 1)
 
-let parse_type str =
-  let lexbuf = Lexing.from_string str in
-  try Enc_parser.prog Enc_lexer.token lexbuf with
+let parse_type ?(is_method = false) str =
+  let lexbuf = Lexing.from_string str
+  and f = if is_method then Enc_parser.meth else Enc_parser.nonmeth in
+  try f Enc_lexer.token lexbuf with
   | SyntaxError msg ->
     Printf.eprintf "Lexing SyntaxError: %s\n" msg;
     Printf.eprintf "%a: syntax error\n%s\n" print_position lexbuf str;
@@ -80,6 +81,9 @@ let rec string_of_objc_type ?(raise_on_struct = false) ty = match ty with
       Option.get tag_opt |> tag_name_to_type
     else
       raise (Encode_type "Missing tag")
+| `Method (args, ret) ->
+  (List.map string_of_objc_type args |> String.concat " @-> ") ^
+  " @-> returning (" ^ string_of_objc_type ret ^ ")"
 ;;
 
 let type64_to_ctype_string ty_str =
