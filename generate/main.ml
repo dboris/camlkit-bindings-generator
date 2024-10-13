@@ -1,5 +1,6 @@
 open Runtime
 open Lib
+open Util
 
 let usage = {|
 Usage: generate-ml -classes <lib-name> | -methods <class-name>
@@ -40,7 +41,8 @@ let () =
     Inspect.library_class_names lib
     |> List.iter (fun cls ->
       if (
-        not (String.starts_with ~prefix:"_" cls)
+        not (String.starts_with ~prefix:"_" cls) &&
+        not (String.member "Internal" cls)
       ) then
         emit_class_module cls ~fw ~include_superclass ~open_modules)
   else if not (String.equal cls "") then
