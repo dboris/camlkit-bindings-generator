@@ -147,6 +147,19 @@ let test_parse_method_sig () =
   A.check A.bool "Result is Option.some" true (Option.is_some actual);
   A.check objc_type "same type" expected (Option.get actual)
 
+let test_ret_type_conv () =
+  let name = "hello"
+  and sel = "hello:"
+  and args = ["int"]
+  and ret_ty = "llong"
+  in
+  let typ = Normal (Printf.sprintf "%s @-> returning %s" "int" ret_ty, ret_ty, args) in
+  let expected =
+    "let hello x self = msg_send ~self ~cmd:(selector \"hello:\") ~typ:(int @-> returning llong) x |> LLong.to_int"
+  and actual = string_of_method_binding {name; args; sel; typ} in
+  A.check A.string "same string" expected actual
+
+
 let suite =
   [ "parse int", `Quick, test_parse_int
   ; "parse ptr float", `Quick, test_parse_ptr_float
@@ -166,6 +179,7 @@ let suite =
   ; "parse protocol", `Quick, test_parse_protocol
   ; "parse vImage_Buffer", `Quick, test_parse_vImage_Buffer
   ; "parse method sig", `Quick, test_parse_method_sig
+  ; "conv return type", `Quick, test_ret_type_conv
   ]
 
 let () = A.run "Enc parser tests" [ "Encode", suite ]

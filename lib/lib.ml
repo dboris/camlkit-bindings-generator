@@ -7,8 +7,8 @@ module Util = Util
 module Bridgesupport = Bridgesupport
 
 type msg_type =
-| Stret of string * string * string list  (* typ, ret_ty, arg_types *)
-| Normal of string * string list  (* typ, arg_types *)
+  | Stret of string * string * string list  (* typ, ret_ty, arg_types *)
+  | Normal of string * string * string list  (* typ, ret_ty, arg_types *)
 
 type meth =
   { name : string
@@ -18,12 +18,9 @@ type meth =
   }
 
 let pp_msg_type = function
-| Stret (a, b, c) ->
-  (* string * string * string list *)
+| Stret (a, b, c)
+| Normal (a, b, c) ->
   Printf.sprintf "(%s), (%s), (%s)" a b (String.concat "," c)
-| Normal (a, b) ->
-  (* string * string list *)
-  Printf.sprintf "(%s), (%s)" a (String.concat "," b)
 
 let method_type m =
   let num_args =
@@ -43,17 +40,19 @@ let method_type m =
   in
   let ret = Method.get_return_type m in
   try
+    let ret_ty = Encode.enc_to_ctype_string ~raise_on_struct:true ret in
     Normal
       ( String.concat " @-> " arg_types ^
         (if num_args > 2 then " @-> " else "") ^
-        "returning " ^ Encode.enc_to_ctype_string ~raise_on_struct:true ret
+        "returning " ^ ret_ty
+      , ret_ty
       , arg_types
       )
   with Encode.Encode_struct ret_ty ->
     Stret
       ( String.concat " @-> " arg_types ^
         (if num_args > 2 then " @-> " else "") ^
-        "returning " ^ Encode.enc_to_ctype_string ret
+        "returning " ^ ret_ty
       , ret_ty
       , arg_types
       )
@@ -64,15 +63,20 @@ let converted_arg name = function
 | "ullong" -> "(ULLong.of_int " ^ name ^ ")"
 | _ -> name
 
+let converted_ret_type = function
+| "llong" -> " |> LLong.to_int"
+| "ullong" -> " |> ULLong.to_int"
+| _ -> ""
+
 let string_of_method_binding {name; args; sel; typ} =
   match args with
   | [] ->
     (* no args *)
     begin match typ with
-    | Normal (typ, _) ->
+    | Normal (typ, ret_ty, _) ->
       Printf.sprintf
-        "let %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s)"
-        name sel typ
+        "let %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s)%s"
+        name sel typ (converted_ret_type ret_ty)
     | Stret (typ, ret_ty, _) ->
       Printf.sprintf
         "let %s self = msg_send_stret ~self ~cmd:(selector \"%s\") ~typ:(%s) ~return_type:%s"
@@ -83,10 +87,12 @@ let string_of_method_binding {name; args; sel; typ} =
     (* single arg *)
     begin try
       match typ with
-      | Normal (typ, arg_types) ->
+      | Normal (typ, ret_ty, arg_types) ->
         Printf.sprintf
-          "let %s x self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s"
-          name sel typ (converted_arg "x" (List.hd arg_types))
+          "let %s x self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s%s"
+          name sel typ
+          (converted_arg "x" (List.hd arg_types))
+          (converted_ret_type ret_ty)
       | Stret (typ, ret_ty, arg_types) ->
         Printf.sprintf
           "let %s x self = msg_send_stret ~self ~cmd:(selector \"%s\") ~typ:(%s) ~return_type:%s %s"
@@ -102,28 +108,29 @@ let string_of_method_binding {name; args; sel; typ} =
   | _ :: rest as args ->
     (* multiple args *)
     begin match typ with
-    | Normal (typ, arg_types) ->
-      begin try
+      | Normal (typ, ret_ty, arg_types) ->
+        begin try
+          let conv_args = List.map2 converted_arg args arg_types in
+          Printf.sprintf
+            "let %s x %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s%s"
+            name (arg_labels rest) sel typ
+            (String.concat " " conv_args)
+            (converted_ret_type ret_ty)
+          (* ^ "\n" ^ emit_doc_comment ~search:true fw sel ^ "\n" *)
+        with
+        | _ ->
+          Printf.eprintf "List.map2 Error: %s %s\n" name typ;
+          String.concat " " (List.init (List.length args) (fun _ -> "?"))
+          |> Printf.sprintf
+            "(* let %s x %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s *)"
+            name (arg_labels rest) sel typ
+        end
+      | Stret (typ, ret_ty, arg_types) ->
         let conv_args = List.map2 converted_arg args arg_types in
         Printf.sprintf
-          "let %s x %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s"
-          name (arg_labels rest) sel typ (String.concat " " conv_args)
+          "let %s x %s self = msg_send_stret ~self ~cmd:(selector \"%s\") ~typ:(%s) ~return_type:%s %s"
+          name (arg_labels rest) sel typ ret_ty (String.concat " " conv_args)
         (* ^ "\n" ^ emit_doc_comment ~search:true fw sel ^ "\n" *)
-      with
-      | _ ->
-        Printf.eprintf "List.map2 Error: %s %s\n" name typ;
-        String.concat " " (List.init (List.length args) (fun _ -> "?"))
-        |> Printf.sprintf
-          "(* let %s x %s self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s *)"
-          name (arg_labels rest) sel typ
-      end
-
-    | Stret (typ, ret_ty, arg_types) ->
-      let conv_args = List.map2 converted_arg args arg_types in
-      Printf.sprintf
-        "let %s x %s self = msg_send_stret ~self ~cmd:(selector \"%s\") ~typ:(%s) ~return_type:%s %s"
-        name (arg_labels rest) sel typ ret_ty (String.concat " " conv_args)
-      (* ^ "\n" ^ emit_doc_comment ~search:true fw sel ^ "\n" *)
     end
 ;;
 
