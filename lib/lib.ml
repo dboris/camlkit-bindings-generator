@@ -141,12 +141,16 @@ let method_binding m  =
   if is_private sel then
     Option.none
   else
-    let name, args = split_selector sel in
-    if unsupported_method name then
+    try
+      let name, args = split_selector sel in
+      if unsupported_method name then
+        Option.none
+      else
+        Option.some
+          {name; args = disambiguate_args args; sel; typ = method_type m}
+    with ex ->
+      Printf.eprintf "Non-fatal exn: %s\n%!" (Printexc.to_string ex);
       Option.none
-    else
-      Option.some
-        {name; args = disambiguate_args args; sel; typ = method_type m}
 ;;
 
 let eq_name mb {name; _} = String.equal mb.name name

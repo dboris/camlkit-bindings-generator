@@ -1,5 +1,5 @@
 (executable
  (name main)
  (public_name generate-ml)
-;  (flags :standard -ccopt "-framework UIKit")
+ (flags :standard -ccopt "-framework Cocoa")
  (libraries camlkit-base.runtime lib))
