@@ -44,8 +44,9 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "OpaqueHIPresentationInstanceRef" | "OpaqueATSUStyle" | "AXUIElement"
 | "SLMPopUpMenuContext_t" | "RXRecognizer" | "GSEvent" | "GSKeyboard"
 | "IOHIDEvent" | "UIWebTouchEvent" | "OpaqueCFHTTPCookie" | "CNPluginCommand"
-| "CFNetService" | "SecIdentity" | "SecAccess" | "CFHSTSPolicy"
-| "sqlite3" | "sqlite3_stmt" | "sqlite3_value" ->
+| "CFNetService" | "SecIdentity" | "SecAccess" | "SecTask" | "CFHSTSPolicy"
+| "sqlite3" | "sqlite3_stmt" | "sqlite3_value" | "OpaquePCSShareProtection"
+| "PCSIdentityData" ->
   "void"
 | "va_list_tag" ->
   "(ptr void)"
