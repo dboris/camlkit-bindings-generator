@@ -82,12 +82,17 @@ let rec string_of_objc_type ?(raise_on_struct = false) ty = match ty with
     else
       raise (Encode_type "Missing tag")
 | `Method (args, ret) ->
-  (args
-  |> List.tl  (* skip self *)
-  |> List.tl  (* skip cmd *)
-  |> List.map string_of_objc_type
-  |> String.concat " @-> ") ^
-  " @-> returning (" ^ string_of_objc_type ret ^ ")"
+  begin match args with
+  | _self :: _cmd :: [] ->
+    "returning (" ^ string_of_objc_type ret ^ ")"
+  | _ ->
+    (args
+    |> List.tl  (* skip self *)
+    |> List.tl  (* skip cmd *)
+    |> List.map string_of_objc_type
+    |> String.concat " @-> ") ^
+    " @-> returning (" ^ string_of_objc_type ret ^ ")"
+  end
 ;;
 
 let type64_to_ctype_string ty_str =

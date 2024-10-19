@@ -246,6 +246,28 @@ let emit_class_module
       close_out file
 ;;
 
+let emit_class_method_def class_name ~open_modules =
+  let cls = Objc.get_class class_name
+  and file = open_out (class_name ^ "Methods.ml") in
+  emit_prelude ~open_modules file;
+  Inspect.methods cls
+  |> List.filter_map (fun m ->
+    let cmd = Sel.get_name (Method.get_name m) in
+    if String.begins_with_char '_' cmd || String.begins_with_char '.' cmd then
+      Option.none
+    else
+      Option.some (cmd, Method.get_type_encoding m))
+  |> List.sort (fun a b -> String.compare (fst a) (fst b))
+  |> List.iter (fun (cmd, enc) ->
+    let name = cmd |> String.split_on_char ':' |> String.concat "'" in
+    Encode.parse_type ~is_method:true enc
+    |> Option.iter (fun typ ->
+        Printf.fprintf file
+          "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
+          (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
+  close_out file
+;;
+
 (* let emit_protocols ~open_modules =
   Inspect.registered_protocols ()
   |> List.iter @@ fun p ->

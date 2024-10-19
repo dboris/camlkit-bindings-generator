@@ -1,3 +1,4 @@
 (test
  (name test_parse_enc)
+ (build_if (= %{context_name} "default"))
  (libraries lib alcotest))
