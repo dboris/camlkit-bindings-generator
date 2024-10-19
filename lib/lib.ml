@@ -257,7 +257,7 @@ let emit_class_method_def class_name ~open_modules =
       Option.none
     else
       Option.some (cmd, Method.get_type_encoding m))
-  |> List.sort (fun a b -> String.compare (fst a) (fst b))
+  |> List.sort_uniq (fun a b -> String.compare (fst a) (fst b))
   |> List.iter (fun (cmd, enc) ->
     let name = cmd |> String.split_on_char ':' |> String.concat "'" in
     Encode.parse_type ~is_method:true enc
