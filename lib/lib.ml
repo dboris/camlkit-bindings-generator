@@ -253,7 +253,7 @@ let emit_class_method_def class_name ~open_modules =
   Inspect.methods cls
   |> List.filter_map (fun m ->
     let cmd = Sel.get_name (Method.get_name m) in
-    if String.begins_with_char '_' cmd || String.begins_with_char '.' cmd then
+    if String.member "_" cmd || String.begins_with_char '.' cmd then
       Option.none
     else
       Option.some (cmd, Method.get_type_encoding m))
