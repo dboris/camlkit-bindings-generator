@@ -46,7 +46,7 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "IOHIDEvent" | "UIWebTouchEvent" | "OpaqueCFHTTPCookie" | "CNPluginCommand"
 | "CFNetService" | "SecIdentity" | "SecAccess" | "SecTask" | "CFHSTSPolicy"
 | "sqlite3" | "sqlite3_stmt" | "sqlite3_value" | "OpaquePCSShareProtection"
-| "PCSIdentityData" ->
+| "PCSIdentityData" | "LXCursor" | "LXLexicon" ->
   "void"
 | "va_list_tag" ->
   "(ptr void)"
@@ -60,7 +60,8 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "PHDisplayVelocity" | "PXAssetMediaTypeCount" | "PXAssetBadgeInfo"
 | "PUGridCoordinates" | "PUDisplayVelocity" | "CTGlyphStorage"
 | "MIORange" | "IMFileSize" | "AKQuadrilateral"| "InternalInit"
-| "HTTPConnectionCacheLimits" as ty ->
+| "HTTPConnectionCacheLimits" | "PXTileGeometry" | "PXTileIdentifier"
+| "MSVSignedRange" | "SCNMatrix4" | "SCNVector3" | "SCNVector4" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
