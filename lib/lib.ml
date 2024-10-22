@@ -251,9 +251,11 @@ let emit_class_module
       close_out file
 ;;
 
-let emit_class_method_def class_name ~open_modules =
-  let cls = Objc.get_class class_name
-  and file = open_out (class_name ^ "Methods.ml") in
+let emit_class_method_def class_name ~open_modules ~meta =
+  let cls' = Objc.get_class class_name in
+  let cls = if meta then Object.get_class cls' else cls'
+  and filename = class_name ^ (if meta then "Class" else "") ^ "Methods.ml" in
+  let file = open_out filename in
   emit_prelude ~open_modules file;
   Inspect.methods cls
   |> List.filter_map (fun m ->
