@@ -17,6 +17,8 @@ module String = struct
     Char.equal (String.get str 0) ch
 end
 
+module StringSet = Set.Make(String)
+
 let is_upper c =
   let code = Char.code c in
   code >= 65 && code <= 90
@@ -61,7 +63,8 @@ let apply_type_exceptions ?(allow_underscore = true) = function
 | "PUGridCoordinates" | "PUDisplayVelocity" | "CTGlyphStorage"
 | "MIORange" | "IMFileSize" | "AKQuadrilateral"| "InternalInit"
 | "HTTPConnectionCacheLimits" | "PXTileGeometry" | "PXTileIdentifier"
-| "MSVSignedRange" | "SCNMatrix4" | "SCNVector3" | "SCNVector4" as ty ->
+| "MSVSignedRange" | "SCNMatrix4" | "SCNVector3" | "SCNVector4"
+| "PUBarAnimationSettings" as ty ->
   raise (Unsupported_type ty)
 | ty ->
   if not allow_underscore && String.contains ty '_' then
@@ -194,3 +197,14 @@ let safe_enum_value = function
 | "9223372036854775808" -> "LLong.max_int"
 | "9223372036854775807" -> "LLong.(pred max_int)"
 | v -> v
+
+let filter_classes_fn filename =
+  if String.(equal filename empty) then
+    Fun.const true
+  else
+    let to_keep =
+      In_channel.with_open_text filename In_channel.input_all
+      |> String.split_on_char '\n'
+      |> StringSet.of_list
+    in
+    Fun.flip StringSet.mem to_keep

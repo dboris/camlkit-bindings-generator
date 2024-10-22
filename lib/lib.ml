@@ -88,10 +88,15 @@ let string_of_method_binding {name; args; sel; typ} =
     begin try
       match typ with
       | Normal (typ, ret_ty, arg_types) ->
+        let arg =
+          if Int.equal (List.length arg_types) 1 then
+            List.hd arg_types
+          else "fixme"
+        in
         Printf.sprintf
           "let %s x self = msg_send ~self ~cmd:(selector \"%s\") ~typ:(%s) %s%s"
           name sel typ
-          (converted_arg "x" (List.hd arg_types))
+          (converted_arg "x" arg)
           (converted_ret_type ret_ty)
       | Stret (typ, ret_ty, arg_types) ->
         Printf.sprintf

@@ -14,6 +14,7 @@ let gen_protocols = ref false
 let include_superclass = ref false
 let load_fw = ref ""
 let open_modules = ref ""
+let filter_classes = ref ""
 
 let speclist =
   [ ("-classes", Arg.Set_string gen_classes, "Generate classes in <lib>")
@@ -28,6 +29,8 @@ let speclist =
   ; ("-load", Arg.Set_string load_fw, "Load framework bundle <fw-path>")
   ; ("-open", Arg.Set_string open_modules,
       "Comma-separated list of modules to open in generated code")
+  ; ("-filter", Arg.Set_string filter_classes,
+      "Filename with class names to keep, one class name per line")
   ]
 
 let () =
@@ -39,6 +42,7 @@ let () =
   and fw = !fw_name
   and include_superclass = !include_superclass
   and open_modules = Util.open_modules !open_modules
+  and keep_class = Util.filter_classes_fn !filter_classes
   in
   Util.load_framework !load_fw;
   if not (String.equal lib "") then
@@ -46,7 +50,8 @@ let () =
     |> List.iter (fun cls ->
       if (
         not (String.starts_with ~prefix:"_" cls) &&
-        not (String.member "Internal" cls)
+        not (String.member "Internal" cls) &&
+        keep_class cls
       ) then
         emit_class_module cls ~fw ~include_superclass ~open_modules)
   else if not (String.equal cls "") then
