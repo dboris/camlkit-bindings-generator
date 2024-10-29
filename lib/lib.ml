@@ -270,29 +270,40 @@ let emit_class_method_def class_name ~open_modules ~meta =
     Encode.parse_type ~is_method:true enc
     |> Option.iter (fun typ ->
         Printf.fprintf file
-          "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
+          "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" imp\n"
           (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
   close_out file
 ;;
 
 (* let emit_protocols ~open_modules =
   Inspect.registered_protocols ()
-  |> List.iter @@ fun p ->
+  |> List.filter_map (fun p ->
     let pname = Protocol.get_name p in
-    if not (is_private pname) then
-      match Inspect.protocol_methods p with
+    if is_private pname then
+      Option.none
+    else
+      let methods =
+        Inspect.protocol_methods p
+        |> List.map (fun m ->
+          let cmd = Objc.Method_description.name m
+          and enc = Objc.Method_description.types m
+          in (cmd, enc))
+        |> List.sort_uniq (fun a b -> String.compare (fst a) (fst b))
+      in
+      Option.some (pname, methods))
+  |> List.sort_uniq (fun a b -> String.compare (fst a) (fst b))
+  |> List.iter @@ fun (pname, methods) ->
+      match methods with
       | [] -> ()
       | methods ->
         let file = open_out (pname ^ ".ml") in
         emit_prelude ~open_modules file;
         methods
-        |> List.iter (fun m ->
-          let cmd = Objc.Method_description.name m in
-          let name = cmd |> String.split_on_char ':' |> String.concat "'"
-          and enc = Objc.Method_description.types m in
+        |> List.iter (fun (cmd, enc) ->
+          let name = cmd |> String.split_on_char ':' |> String.concat "'" in
           Encode.parse_type ~is_method:true enc
           |> Option.iter (fun typ ->
               Printf.fprintf file
-                "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" ~imp\n"
+                "let %s imp = Define.method_spec ~cmd:(selector \"%s\") ~typ:(%s) ~enc:\"%s\" imp\n"
                 (valid_name name) cmd (Encode.string_of_objc_type typ) enc));
         close_out file *)
