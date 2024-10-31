@@ -41,7 +41,7 @@ let emit_const x =
   if String.equal t "id" then
     Printf.printf "let %s = new_string \"%s\"\n" safe_name name
   else
-    Printf.printf "let %s = !@ (Foreign.foreign_value \"%s\" %s)\n" safe_name name t
+    Printf.printf "let %s = foreign_value_or_null \"%s\" %s\n" safe_name name t
 
 let emit_enum x =
   let name = Option.get (S.attribute "name" x)
@@ -212,7 +212,7 @@ let emit_func _fw x =
     funcs := emit_inline_func name ty :: !funcs
   | _ ->
     funcs :=
-      Printf.sprintf "let %s = Foreign.foreign \"%s\" (%s)"
+      Printf.sprintf "let %s = Foreign.foreign ~stub:true \"%s\" (%s)"
         (if is_upper (String.get name 0) then "_" ^ name else name)
         name ty
       (* ; emit_doc_comment ~search:true fw name ^ "\n" *)
