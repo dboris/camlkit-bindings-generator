@@ -23,7 +23,7 @@
   dune
   ctypes
   ctypes-foreign
-  (camlkit-base (>= "0.2.0"))
+  (camlkit-base (>= "0.3.0"))
   markup
   lambdasoup
   menhir

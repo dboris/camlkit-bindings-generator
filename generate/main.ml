@@ -63,7 +63,6 @@ let () =
   else if not (String.equal method_def_cls "") then
     emit_class_method_def method_def_cls ~open_modules ~meta:method_def_meta
   else if proto then
-    (* emit_protocols ~open_modules *)
-    failwith "Disabled until next release of camlkit"
+    emit_protocols ~open_modules
   else
     print_endline usage
