@@ -169,12 +169,15 @@ let emit_prelude ~open_modules file =
 
 let load_framework fw =
   if not (String.equal fw "") then
-    let bundle =
-      NSBundle.self |> NSBundleClass.bundleWithPath (new_string fw) in
-    if is_nil bundle then
-      Printf.eprintf "Framework bundle not found!\n%!"
-    else
-      NSBundle.load bundle |> ignore
+    fw
+    |> String.split_on_char ','
+    |> List.iter @@ fun fw ->
+      let bundle =
+        NSBundle.self |> NSBundleClass.bundleWithPath (new_string fw) in
+      if is_nil bundle then
+        Printf.eprintf "Framework bundle not found!\n%!"
+      else
+        NSBundle.load bundle |> ignore
 ;;
 
 let class_image class_name =

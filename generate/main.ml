@@ -29,7 +29,7 @@ let speclist =
   ; ("-super", Arg.Set include_superclass,
       "Include superclass methods in generated module")
   ; ("-fw", Arg.Set_string fw_name, "Framework name <fw-name>")
-  ; ("-load", Arg.Set_string load_fw, "Load framework bundle <fw-path>")
+  ; ("-load", Arg.Set_string load_fw, "Comma-separated list of framework bundles to load")
   ; ("-open", Arg.Set_string open_modules,
       "Comma-separated list of modules to open in generated code")
   ; ("-filter", Arg.Set_string filter_classes,
