@@ -1,7 +1,5 @@
 (test
  (name test_bridgesupport)
- (build_if (= %{context_name} "default"))
- (libraries
-  lib
-  lambdasoup
-  alcotest))
+ (build_if
+  (= %{context_name} "default"))
+ (libraries lib lambdasoup alcotest))

@@ -18,22 +18,31 @@ let open_modules = ref ""
 let filter_classes = ref ""
 
 let speclist =
-  [ ("-classes", Arg.Set_string gen_classes, "Generate classes in <lib>")
-  ; ("-methods", Arg.Set_string gen_methods, "Generate methods in <class>")
-  ; ("-method-def", Arg.Set_string gen_method_def,
-      "Generate method definitions for <class>")
-  ; ("-meta", Arg.Set gen_method_def_metaclass,
-      "Generate method definitions for the metaclass")
-  ; ("-protocols", Arg.Set gen_protocols,
-      "Generate protocols registered in the runtime")
-  ; ("-super", Arg.Set include_superclass,
-      "Include superclass methods in generated module")
-  ; ("-fw", Arg.Set_string fw_name, "Framework name <fw-name>")
-  ; ("-load", Arg.Set_string load_fw, "Comma-separated list of framework bundles to load")
-  ; ("-open", Arg.Set_string open_modules,
-      "Comma-separated list of modules to open in generated code")
-  ; ("-filter", Arg.Set_string filter_classes,
-      "Filename with class names to keep, one class name per line")
+  [
+    ("-classes", Arg.Set_string gen_classes, "Generate classes in <lib>");
+    ("-methods", Arg.Set_string gen_methods, "Generate methods in <class>");
+    ( "-method-def",
+      Arg.Set_string gen_method_def,
+      "Generate method definitions for <class>" );
+    ( "-meta",
+      Arg.Set gen_method_def_metaclass,
+      "Generate method definitions for the metaclass" );
+    ( "-protocols",
+      Arg.Set gen_protocols,
+      "Generate protocols registered in the runtime" );
+    ( "-super",
+      Arg.Set include_superclass,
+      "Include superclass methods in generated module" );
+    ("-fw", Arg.Set_string fw_name, "Framework name <fw-name>");
+    ( "-load",
+      Arg.Set_string load_fw,
+      "Comma-separated list of framework bundles to load" );
+    ( "-open",
+      Arg.Set_string open_modules,
+      "Comma-separated list of modules to open in generated code" );
+    ( "-filter",
+      Arg.Set_string filter_classes,
+      "Filename with class names to keep, one class name per line" );
   ]
 
 let () =
@@ -46,23 +55,19 @@ let () =
   and fw = !fw_name
   and include_superclass = !include_superclass
   and open_modules = Util.open_modules !open_modules
-  and keep_class = Util.filter_classes_fn !filter_classes
-  in
+  and keep_class = Util.filter_classes_fn !filter_classes in
   Util.load_framework !load_fw;
   if not (String.equal lib "") then
     Inspect.library_class_names lib
     |> List.iter (fun cls ->
-      if (
-        not (String.starts_with ~prefix:"_" cls) &&
-        not (String.member "Internal" cls) &&
-        keep_class cls
-      ) then
-        emit_class_module cls ~fw ~include_superclass ~open_modules)
+           if
+             (not (String.starts_with ~prefix:"_" cls))
+             && (not (String.member "Internal" cls))
+             && keep_class cls
+           then emit_class_module cls ~fw ~include_superclass ~open_modules)
   else if not (String.equal cls "") then
     emit_class_module cls ~fw ~include_superclass ~open_modules
   else if not (String.equal method_def_cls "") then
     emit_class_method_def method_def_cls ~open_modules ~meta:method_def_meta
-  else if proto then
-    emit_protocols ~open_modules
-  else
-    print_endline usage
+  else if proto then emit_protocols ~open_modules
+  else print_endline usage

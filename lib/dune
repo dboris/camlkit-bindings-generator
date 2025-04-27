@@ -1,19 +1,9 @@
 (library
  (name lib)
- (modules
-  enc_parser
-  enc_lexer
-  objc_type
-  encode
-  bridgesupport
-  util
-  lib)
- (libraries
-  camlkit-base.runtime
-  camlkit-base.Foundation
-  lambdasoup
-  str))
+ (modules enc_parser enc_lexer objc_type encode bridgesupport util lib)
+ (libraries camlkit-base.runtime camlkit-base.Foundation lambdasoup str))
 
-(menhir (modules enc_parser))
+(menhir
+ (modules enc_parser))
 
 (ocamllex enc_lexer)

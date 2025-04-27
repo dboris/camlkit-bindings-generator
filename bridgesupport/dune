@@ -1,7 +1,4 @@
 (executable
  (name main)
  (public_name bs-to-ml)
- (libraries
-  markup
-  lambdasoup
-  lib))
+ (libraries markup lambdasoup lib))
