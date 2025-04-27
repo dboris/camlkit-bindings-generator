@@ -121,11 +121,43 @@ let test_function_pointer () =
   in
   A.check A.string "alias" expected actual
 
+let test_struct () =
+  let expected =
+    [ "type t = [`CGPoint] structure"
+    ; "(** Apple docs: {{:https://developer.apple.com/documentation/coregraphics/cgpoint?language=objc}CGPoint} *)\n"
+    ; "let t : t typ = structure \"CGPoint\""
+    ; "let x_field = field t \"x\" double"
+    ; "let y_field = field t \"y\" double"
+    ; "\nlet () = seal t\n"
+    ; "let init"
+    ; "    ~x"
+    ; "    ~y"
+    ; "  ="
+    ; "  let t = make t in"
+    ; "  setf t x_field x;"
+    ; "  setf t y_field y;"
+    ; "  t\n"
+    ; "let x t = getf t x_field"
+    ; "let y t = getf t y_field"
+    ; "let setX t = setf t x_field"
+    ; "let setY t = setf t y_field"
+    ]
+  and actual =
+    "<struct name='CGPoint' type64='{CGPoint=&quot;x&quot;d&quot;y&quot;d}'/>"
+    |> S.parse
+    |> S.select_one "struct"
+    |> Option.get
+    |> B.emit_struct fw
+    |> snd
+  in
+  A.check A.(list string) "same type" expected actual
+
 let suite =
   [ "test_CGAffineTransform", `Quick, test_emit_CGAffineTransform
   ; "test_emit_CGPDFArray", `Quick, test_emit_CGPDFArray
   ; "test_emit_CGPDFString", `Quick, test_emit_CGPDFString
   ; "test_function_pointer", `Quick, test_function_pointer
+  ; "test_struct", `Quick, test_struct
   ]
 
 let () = A.run "Bridgesupport" [ "emit", suite ]

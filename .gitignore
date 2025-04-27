@@ -1,4 +1,5 @@
 /_build
+/data
 local/
 .DS_Store
 .merlin

@@ -254,36 +254,42 @@ let emit_struct fw x =
           | _ -> false
       in
       let tag_name = tag_opt |> Option.value ~default:name
-      and accessors =
+      and getters =
         field_names |> List.map @@ fun (fname, _) ->
-          Printf.sprintf "let %s t = getf t %s" fname fname
+          Printf.sprintf "let %s t = getf t %s_field" fname fname
+      and setters =
+        field_names |> List.map @@ fun (fname, _) ->
+          Printf.sprintf
+            "let set%s t = setf t %s_field"
+            (String.capitalize_ascii fname) fname
       and init =
         "let init" :: (field_names |> List.map @@ fun (fname, obj_type) ->
             match obj_type with
             | `Pointer ptr ->
               let typ = Encode.string_of_objc_type ptr in
-              Printf.sprintf "    ?%s:(%s_v = from_voidp %s null)"
-                fname fname typ
+              Printf.sprintf "    ?(%s = from_voidp %s null)"
+                fname typ
             | _ ->
-              Printf.sprintf "    ~%s:%s_v" fname fname)
-        @ [ if has_pointer_field then "    () =" else "    ="
+              Printf.sprintf "    ~%s" fname)
+        @ [ if has_pointer_field then "  () =" else "  ="
           ; "  let t = make t in"
           ]
         @ (field_names |> List.map @@ fun (fname, _) ->
-           Printf.sprintf "  setf t %s %s_v;" fname fname)
-        @ [ "  t" ]
+           Printf.sprintf "  setf t %s_field %s;" fname fname)
+        @ [ "  t\n" ]
       in
       name,
-      [ Printf.sprintf
-          "let t : [`%s] structure typ = structure \"%s\"" name tag_name
+      [ Printf.sprintf "type t = [`%s] structure" name
       ; emit_doc_comment fw tag_name ^ "\n"
+      ; Printf.sprintf "let t : t typ = structure \"%s\"" tag_name
       ] @ (field_names |> List.map @@ fun (fname, ty) ->
           ty
           |> Encode.string_of_objc_type
-          |> Printf.sprintf "let %s = field t \"%s\" %s" (valid_name fname) fname)
+          |> Printf.sprintf "let %s_field = field t \"%s\" %s" (valid_name fname) fname)
         @  [ "\nlet () = seal t\n" ]
         @ init
-        @ accessors
+        @ getters
+        @ setters
     | _ -> assert false
   with _ ->
     Printf.eprintf "Skipping struct %s...\n" name;
