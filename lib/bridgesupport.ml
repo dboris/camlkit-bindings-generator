@@ -271,7 +271,7 @@ let emit_struct fw x =
                 fname typ
             | _ ->
               Printf.sprintf "    ~%s" fname)
-        @ [ if has_pointer_field then "  () =" else "  ="
+        @ [ if has_pointer_field then "    ()\n  =" else "  ="
           ; "  let t = make t in"
           ]
         @ (field_names |> List.map @@ fun (fname, _) ->

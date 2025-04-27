@@ -150,7 +150,38 @@ let test_struct () =
     |> B.emit_struct fw
     |> snd
   in
-  A.check A.(list string) "same type" expected actual
+  A.check A.(list string) "same list" expected actual
+
+let test_struct_init () =
+  let expected =
+    [ "type t = [`CFXMLExternalID] structure"
+    ; "(** Apple docs: {{:https://developer.apple.com/documentation/coregraphics/cfxmlexternalid?language=objc}CFXMLExternalID} *)\n"
+    ; "let t : t typ = structure \"CFXMLExternalID\""
+    ; "let systemID_field = field t \"systemID\" (ptr CFURL.t)"
+    ; "let publicID_field = field t \"publicID\" (ptr CFString.t)"
+    ; "\nlet () = seal t\n"
+    ; "let init"
+    ; "    ?(systemID = from_voidp CFURL.t null)"
+    ; "    ?(publicID = from_voidp CFString.t null)"
+    ; "    ()\n  ="
+    ; "  let t = make t in"
+    ; "  setf t systemID_field systemID;"
+    ; "  setf t publicID_field publicID;"
+    ; "  t\n"
+    ; "let systemID t = getf t systemID_field"
+    ; "let publicID t = getf t publicID_field"
+    ; "let setSystemID t = setf t systemID_field"
+    ; "let setPublicID t = setf t publicID_field"
+    ]
+  and actual =
+    "<struct name='CFXMLExternalID' type64='{CFXMLExternalID=&quot;systemID&quot;^{__CFURL}&quot;publicID&quot;^{__CFString}}'/>"
+    |> S.parse
+    |> S.select_one "struct"
+    |> Option.get
+    |> B.emit_struct fw
+    |> snd
+  in
+  A.check A.(list string) "same list" expected actual
 
 let suite =
   [ "test_CGAffineTransform", `Quick, test_emit_CGAffineTransform
@@ -158,6 +189,7 @@ let suite =
   ; "test_emit_CGPDFString", `Quick, test_emit_CGPDFString
   ; "test_function_pointer", `Quick, test_function_pointer
   ; "test_struct", `Quick, test_struct
+  ; "test_struct_init", `Quick, test_struct_init
   ]
 
 let () = A.run "Bridgesupport" [ "emit", suite ]
