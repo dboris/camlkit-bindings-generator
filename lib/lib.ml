@@ -206,6 +206,9 @@ let emit_class_module ~fw ?(include_superclass = false) ?(min_methods = 2)
     emit_prelude ~open_modules file;
     Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
     Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
+    Printf.fprintf file
+      "let alloc () = msg_send ~self ~cmd:(selector \"alloc\") ~typ:(returning \
+       id)\n\n";
 
     (if include_superclass && not (is_nil super) then
        let superclass = Class.get_name super in
