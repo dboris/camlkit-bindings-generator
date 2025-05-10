@@ -38,7 +38,7 @@ let apply_type_exceptions ?(allow_underscore = true) = function
   | "CGSRegionObject" | "vImage_Buffer" | "SerialObjectPtrArray" | "filterShape"
   | "CC_MD5state_st" | "mapped_model_file" | "FastRegistration_Signatures"
   | "AuthorizationOpaqueRef" | "OpaqueCUIRendererRef" | "SpeechChannelRecord"
-  | "RXRecognitionSystem" | "CGSnappingInfo" | "LSASN"
+  | "RXRecognitionSystem" | "CGSnappingInfo" | "LSASN" | "kcdata_iter"
   | "OpaqueLSSharedFileListRef" | "CGLPBufferObject" | "OpaqueWindowPtr"
   | "EventTypeSpec" | "OpaqueIconRef" | "OpaqueCoreDrag" | "OpaqueEventRef"
   | "OpaqueMenuRef" | "TISInputSource" | "WorkspaceKVOData_t"
@@ -186,3 +186,6 @@ let filter_classes_fn filename =
       |> String.split_on_char '\n' |> StringSet.of_list
     in
     Fun.flip StringSet.mem to_keep
+
+let normalize_whitespace str = Str.global_replace (Str.regexp "[ \n]+") " " str
+let remove_leading_underscores str = Str.replace_first (Str.regexp "^_+") "" str

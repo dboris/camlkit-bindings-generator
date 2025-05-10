@@ -1,6 +1,7 @@
 open Runtime
 open Util
 module Encode = Encode
+module Emit_c = Emit_c
 module Objc_type = Objc_type
 module Util = Util
 module Bridgesupport = Bridgesupport

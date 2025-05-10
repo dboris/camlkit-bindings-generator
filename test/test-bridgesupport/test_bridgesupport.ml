@@ -167,6 +167,65 @@ let test_struct_init () =
   in
   A.check A.(list string) "same list" expected actual
 
+let test_inline_function () =
+  let expected =
+    "CFRange Camlkit_CFRangeMake(long long x0, long long x1) { return \
+     CFRangeMake(x0, x1); }" |> String.split_on_char '\n'
+    |> List.map String.trim
+    |> List.filter (( <> ) "")
+    |> String.concat " "
+  and actual =
+    {|
+    <function inline='true' name='CFRangeMake'>
+    <arg type64='q'/>
+    <arg type64='q'/>
+    <retval type64='{_CFRange=qq}'/>
+    </function>
+    |}
+    |> parse_xml |> S.select_one "function" |> Option.get
+    |> fun x ->
+    let name = Option.get (S.attribute "name" x)
+    and args =
+      B.select_children "arg" x
+      |> List.map (fun arg -> S.attribute "type64" arg |> Option.get)
+    and retval =
+      B.select_first "retval" x |> Option.get |> S.attribute "type64"
+      |> Option.get
+    in
+    B.emit_inline_stub (name, args, retval) |> Util.normalize_whitespace
+  in
+  A.check A.string "alias" expected actual
+
+let test_inline_function_2 () =
+  let expected =
+    "unsigned short \
+     Camlkit_CFStringGetCharacterFromInlineBuffer(CFStringInlineBuffer* x0, \
+     long long x1) { return CFStringGetCharacterFromInlineBuffer(x0, x1); }"
+    |> String.split_on_char '\n' |> List.map String.trim
+    |> List.filter (( <> ) "")
+    |> String.concat " "
+  and actual =
+    {|
+    <function inline='true' name='CFStringGetCharacterFromInlineBuffer'>
+    <arg type64='^{CFStringInlineBuffer=[64S]^{__CFString}^S*{CFRange=qq}qq}' type_modifier='n'/>
+    <arg type64='q'/>
+    <retval type64='S'/>
+    </function>
+    |}
+    |> parse_xml |> S.select_one "function" |> Option.get
+    |> fun x ->
+    let name = Option.get (S.attribute "name" x)
+    and args =
+      B.select_children "arg" x
+      |> List.map (fun arg -> S.attribute "type64" arg |> Option.get)
+    and retval =
+      B.select_first "retval" x |> Option.get |> S.attribute "type64"
+      |> Option.get
+    in
+    B.emit_inline_stub (name, args, retval) |> Util.normalize_whitespace
+  in
+  A.check A.string "alias" expected actual
+
 let suite =
   [
     ("test_CGAffineTransform", `Quick, test_emit_CGAffineTransform);
@@ -175,6 +234,8 @@ let suite =
     ("test_function_pointer", `Quick, test_function_pointer);
     ("test_struct", `Quick, test_struct);
     ("test_struct_init", `Quick, test_struct_init);
+    ("test_inline_function", `Quick, test_inline_function);
+    ("test_inline_function_2", `Quick, test_inline_function_2);
   ]
 
 let () = A.run "Bridgesupport" [ ("emit", suite) ]

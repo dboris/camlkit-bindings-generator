@@ -58,6 +58,11 @@ let main () =
       let file = if to_globals then stdout else open_out filename in
       if not to_globals then emit_prelude ~open_modules file;
       emit_funcs_prelude file fw;
+      Printf.fprintf file
+        {|(* Ensure inline function wrappers object file gets linked *)
+external _ensure_object_file_linked : unit -> unit = "_ensure_object_file_linked"
+
+|};
       lines |> List.iter (Printf.fprintf file "%s\n");
       close_out file;
 
