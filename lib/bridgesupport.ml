@@ -216,7 +216,7 @@ let emit_inlines fw =
   | [] -> []
   | fns ->
       (sprintf {|#include <%s/%s.h>|} fw fw ^ "\n")
-      :: sprintf "void _ensure_object_file_linked(void) {}\n"
+      :: sprintf "void _ensure_inlines_object_file_linked(void) {}\n"
       :: (fns |> List.rev |> List.map emit_inline_stub)
 
 let emit_struct fw x =
