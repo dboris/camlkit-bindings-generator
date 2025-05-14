@@ -17,21 +17,28 @@ let type64_to_objc_type x =
       (S.attribute "name" x |> Option.get);
     raise e
 
-let type64_to_objc_type_string x =
+let type64_to_objc_type_string ?(verbose = false) x =
   try
     S.attribute "type64" x
     |> Option.map Encode.parse_type
     |> Option.get
     |> Option.map Encode.string_of_objc_type
     |> Option.get
-  with Invalid_argument _ as e ->
-    eprintf "type64_to_objc_type_string failed: %s\n"
-      (S.attribute "name" x |> Option.get);
-    raise e
+  with
+  | Unsupported_type _ as e ->
+      if verbose then
+        eprintf "Unsupported type: %s\n" (S.attribute "name" x |> Option.get);
+      raise e
+  | e ->
+      if verbose then
+        eprintf "type64_to_objc_type_string failed: %s, %s\n"
+          (S.attribute "name" x |> Option.get)
+          (Printexc.to_string e);
+      raise e
 
-let emit_const x =
+let emit_const ?(verbose = false) x =
   let name = Option.get (S.attribute "name" x)
-  and t = type64_to_objc_type_string x in
+  and t = type64_to_objc_type_string ~verbose x in
   let safe_name = if is_upper (String.get name 0) then "_" ^ name else name in
   if String.equal t "id" then
     printf "let %s = new_string \"%s\"\n" safe_name name
@@ -76,9 +83,9 @@ let emit_opaque_dep x name =
       else []
   | _ -> []
 
-let emit_opaque fw x =
+let emit_opaque ?(verbose = false) fw x =
   let name = Option.get (S.attribute "name" x)
-  and t = type64_to_objc_type_string x in
+  and t = type64_to_objc_type_string ~verbose x in
   let self_ref = String.equal t ("(ptr " ^ name ^ ".t)") in
   let result =
     [ sprintf "module %s = struct" name ]
@@ -103,9 +110,9 @@ let emit_type_module ~open_modules fw mod_name =
     fprintf file "%s" (emit_doc_comment fw mod_name);
     close_out file)
 
-let emit_cftype ~open_modules fw x =
+let emit_cftype ?(verbose = false) ~open_modules fw x =
   let name = Option.get (S.attribute "name" x)
-  and t = type64_to_objc_type_string x in
+  and t = type64_to_objc_type_string ~verbose x in
   let is_mutable = String.member "Mutable" name
   and is_ref = String.ends_with ~suffix:"Ref" name
   and mod_name =
@@ -140,15 +147,15 @@ let select_first tag el =
 
 let get_type64 x = S.attribute "type64" x |> Option.get
 
-let encode_type x =
+let encode_type ?(verbose = false) x =
   match S.attribute "type64" x with
-  | Some ty -> Encode.type64_to_ctype_string ty
+  | Some ty -> Encode.type64_to_ctype_string ~verbose ty
   | None ->
       S.attribute "type" x
-      |> Option.map Encode.type64_to_ctype_string
+      |> Option.map (Encode.type64_to_ctype_string ~verbose)
       |> Option.get
 
-let rec func_type el =
+let rec func_type ?(verbose = false) el =
   let arg_types =
     select_children "arg" el
     |> List.map (fun arg ->
@@ -166,12 +173,14 @@ let rec func_type el =
     try
       select_children "retval" el
       |> List.hd |> S.attribute "type64" |> Option.get
-      |> Encode.type64_to_ctype_string
+      |> Encode.type64_to_ctype_string ~verbose
     with
     | Encode.Encode_struct _ -> "ptr void"
-    | _ ->
-        let error = "func_type retval or type64 is None" in
-        eprintf "%s\n" error;
+    | e ->
+        let error =
+          sprintf "func_type: retval error: %s" (Printexc.to_string e)
+        in
+        if verbose then eprintf "%s\n" error;
         raise (GenerateError error)
   in
   (match List.length arg_types with
@@ -185,8 +194,8 @@ let emit_inline_func name ty =
     (if is_upper (String.get name 0) then "_" ^ name else name)
     ("Camlkit_" ^ name) ty
 
-let emit_func _fw x =
-  let name = Option.get (S.attribute "name" x) and ty = func_type x in
+let emit_func ?(verbose = false) _fw x =
+  let name = Option.get (S.attribute "name" x) and ty = func_type ~verbose x in
   (* collect functions for emiting a stub during separate pass *)
   match S.attribute "inline" x with
   | Some "true" ->
@@ -219,7 +228,7 @@ let emit_inlines fw =
       :: sprintf "void _ensure_inlines_object_file_linked(void) {}\n"
       :: (fns |> List.rev |> List.map emit_inline_stub)
 
-let emit_struct fw x =
+let emit_struct ?(verbose = false) fw x =
   let name = Option.get (S.attribute "name" x) in
   try
     match
@@ -281,5 +290,5 @@ let emit_struct fw x =
           @ [ "\nlet () = seal t\n" ] @ init @ getters @ setters )
     | _ -> assert false
   with _ ->
-    eprintf "Skipping struct %s...\n" name;
+    if verbose then eprintf "Skipping struct %s...\n" name;
     (name, [])

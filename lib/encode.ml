@@ -80,16 +80,23 @@ let rec string_of_objc_type ?(raise_on_struct = false) ty =
           |> String.concat " @-> ")
           ^ " @-> returning (" ^ string_of_objc_type ret ^ ")")
 
-let type64_to_ctype_string ty_str =
+let type64_to_ctype_string ?(verbose = false) ty_str =
   try
     if String.equal String.empty ty_str then raise (Failure "ty_str is empty");
     parse_type ty_str |> Option.map string_of_objc_type |> Option.get
   with e ->
-    Printf.eprintf "Parse type error: '%s'\n%!" ty_str;
-    Printexc.print_backtrace stderr;
+    if verbose then (
+      Printf.eprintf "Parse type error: '%s'\n%!" ty_str;
+      Printexc.print_backtrace stderr);
     raise e
 
-let enc_to_ctype_string ?(raise_on_struct = false) enc =
-  parse_type enc
-  |> Option.map (string_of_objc_type ~raise_on_struct)
-  |> Option.get
+let enc_to_ctype_string ?(verbose = false) ?(raise_on_struct = false) enc =
+  try
+    parse_type enc
+    |> Option.map (string_of_objc_type ~raise_on_struct)
+    |> Option.get
+  with e ->
+    if verbose then (
+      Printf.eprintf "Enc error: '%s'\n%!" enc;
+      Printexc.print_backtrace stderr);
+    raise e
