@@ -238,12 +238,13 @@ let emit_class_method_def class_name ~open_modules ~meta =
          let name = cmd |> String.split_on_char ':' |> String.concat "'" in
          Encode.parse_type ~is_method:true enc
          |> Option.iter (fun typ ->
-                Printf.fprintf file
-                  "let %s imp = Define.method_spec ~cmd:(selector \"%s\") \
-                   ~typ:(%s) ~enc:\"%s\" imp\n"
-                  (valid_name name) cmd
-                  (Encode.string_of_objc_type typ)
-                  enc));
+                try
+                  let ty = Encode.string_of_objc_type typ in
+                  Printf.fprintf file
+                    "let %s imp = Define.method_spec ~cmd:(selector \"%s\") \
+                     ~typ:(%s) ~enc:\"%s\" imp\n"
+                    (valid_name name) cmd ty enc
+                with _ -> ()));
   close_out file
 
 let emit_protocols ~open_modules =

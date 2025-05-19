@@ -47,7 +47,8 @@ let apply_type_exceptions ?(allow_underscore = true) = function
   | "IOHIDEvent" | "UIWebTouchEvent" | "OpaqueCFHTTPCookie" | "CNPluginCommand"
   | "CFNetService" | "SecIdentity" | "SecAccess" | "SecTask" | "CFHSTSPolicy"
   | "sqlite3" | "sqlite3_stmt" | "sqlite3_value" | "OpaquePCSShareProtection"
-  | "PCSIdentityData" | "LXCursor" | "LXLexicon" ->
+  | "PCSIdentityData" | "LXCursor" | "LXLexicon" | "GLsync" | "GLUnurbs"
+  | "GLIContextRec" ->
       "void"
   | "va_list_tag" -> "(ptr void)"
   | ( "NLConstraintParameters" | "GLKMatrix2" | "GLKMatrix3" | "GLKMatrix4"
@@ -63,7 +64,9 @@ let apply_type_exceptions ?(allow_underscore = true) = function
     | "PUDisplayVelocity" | "CTGlyphStorage" | "MIORange" | "IMFileSize"
     | "AKQuadrilateral" | "InternalInit" | "HTTPConnectionCacheLimits"
     | "PXTileGeometry" | "PXTileIdentifier" | "MSVSignedRange" | "SCNMatrix4"
-    | "SCNVector3" | "SCNVector4" | "PUBarAnimationSettings" ) as ty ->
+    | "SCNVector3" | "SCNVector4" | "PUBarAnimationSettings" | "cl_device_id"
+    | "CGLPrivateObj" | "CGLRendererInfoObject" | "CGLPrivateObject"
+    | "CGLShareGroupRec" | "CACornerRadii" ) as ty ->
       raise (Unsupported_type ty)
   | ty ->
       if (not allow_underscore) && String.contains ty '_' then
