@@ -1,0 +1,5 @@
+(executable
+ (name main)
+ (public_name ckgen)
+ (libraries camlkit-base.runtime lib cmdliner)
+ (flags :standard -ccopt "-framework Foundation"))

@@ -1,6 +1,6 @@
 (library
  (name lib)
- (modules enc_parser enc_lexer objc_type encode emit_c bridgesupport util lib)
+ (modules enc_parser enc_lexer objc_type encode emit_c bind_c bind_objc util)
  (libraries camlkit-base.runtime camlkit-base.Foundation lambdasoup str ctypes.stubs))
 
 (menhir

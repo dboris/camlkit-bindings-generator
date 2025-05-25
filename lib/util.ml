@@ -142,7 +142,7 @@ let emit_doc_comment ?(search = false) fw symbol =
       (String.lowercase_ascii symbol)
       symbol
 
-let emit_prelude ~open_modules file =
+let emit_prologue ~open_modules file =
   [
     "(* auto-generated, do not modify *)\n";
     "[@@@ocaml.warning \"-33\"]";

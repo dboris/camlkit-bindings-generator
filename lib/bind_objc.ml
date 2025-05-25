@@ -1,10 +1,5 @@
 open Runtime
 open Util
-module Encode = Encode
-module Emit_c = Emit_c
-module Objc_type = Objc_type
-module Util = Util
-module Bridgesupport = Bridgesupport
 
 type msg_type =
   | Stret of string * string * string list (* typ, ret_ty, arg_types *)
@@ -192,7 +187,7 @@ let emit_metaclass_module ~open_modules ~fw cls cls' =
   | [] -> ()
   | methods' ->
       let file = open_out (cls ^ "Class.ml") in
-      emit_prelude ~open_modules file;
+      emit_prologue ~open_modules file;
       Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
       emit_method_bindings ~file methods';
       close_out file
@@ -204,7 +199,7 @@ let emit_class_module ~fw ?(include_superclass = false) ?(min_methods = 2)
   Inspect.methods cls' |> List.filter_map method_binding |> fun bindings ->
   if List.length bindings >= min_methods then (
     let file = open_out (cls ^ ".ml") in
-    emit_prelude ~open_modules file;
+    emit_prologue ~open_modules file;
     Printf.fprintf file "%s\n\n" (emit_doc_comment fw cls);
     Printf.fprintf file "let self = get_class \"%s\"\n\n" cls;
     Printf.fprintf file
@@ -227,7 +222,7 @@ let emit_class_method_def class_name ~open_modules ~meta =
   let cls = if meta then Object.get_class cls' else cls'
   and filename = class_name ^ (if meta then "Class" else "") ^ "Methods.ml" in
   let file = open_out filename in
-  emit_prelude ~open_modules file;
+  emit_prologue ~open_modules file;
   Inspect.methods cls
   |> List.filter_map (fun m ->
          let cmd = Sel.get_name (Method.get_name m) in
@@ -268,7 +263,7 @@ let emit_protocols ~open_modules =
      | [] -> ()
      | methods ->
          let file = open_out (pname ^ ".ml") in
-         emit_prelude ~open_modules file;
+         emit_prologue ~open_modules file;
          methods
          |> List.iter (fun (cmd, enc) ->
                 let name =

@@ -1,5 +1,6 @@
 open Util
 open Printf
+module M = Markup
 module S = Soup
 
 exception GenerateError of string
@@ -104,7 +105,7 @@ let emit_type_module ~open_modules fw mod_name =
   let filename = sprintf "data/%s/%s.ml" fw mod_name in
   if not (Sys.file_exists filename) then (
     let file = open_out filename in
-    emit_prelude ~open_modules file;
+    emit_prologue ~open_modules file;
     fprintf file "let t : [`%s] structure typ = structure \"%s\"\n" mod_name
       mod_name;
     fprintf file "%s" (emit_doc_comment fw mod_name);
@@ -292,3 +293,60 @@ let emit_struct ?(verbose = false) fw x =
   with _ ->
     if verbose then eprintf "Skipping struct %s...\n" name;
     (name, [])
+
+let emit ~open_modules ~verbose fw x =
+  try
+    match S.name x with
+    | "struct" ->
+        let name, lines = emit_struct ~verbose fw x in
+        let file = open_out (sprintf "data/%s/%s.ml" fw name) in
+        emit_prologue ~open_modules file;
+        lines |> List.iter (fprintf file "%s\n");
+        close_out file
+    | "constant" -> emit_const ~verbose x
+    | "enum" -> emit_enum x
+    | "function" -> emit_func ~verbose fw x
+    | "opaque" -> emit_opaque ~verbose fw x |> List.iter print_endline
+    | "cftype" -> emit_cftype ~verbose ~open_modules fw x
+    | n -> if verbose then eprintf "Not emiting %s\n" n else ()
+  with _ -> ()
+
+let emit_funcs_prologue file fw =
+  match String.lowercase_ascii fw with
+  | "corefoundation" -> fprintf file "open CoreFoundation_globals\n\n"
+  | "coregraphics" -> fprintf file "open CoreGraphics_globals\n\n"
+  | _ -> ()
+
+let emit_globals ~open_modules ~fw ~verbose =
+  emit_prologue ~open_modules stdout;
+
+  M.channel stdin |> M.parse_xml |> M.signals |> S.from_signals
+  |> S.select_one "signatures"
+  |> Option.iter (fun x ->
+         S.children x |> S.elements |> S.iter (emit ~open_modules ~verbose fw));
+
+  emit_funcs () |> function
+  | [] -> ()
+  | lines -> (
+      let filename = sprintf "data/%s/%s_fn.ml" fw fw
+      and to_globals = List.length lines < 200
+      and inlines = emit_inlines fw in
+      let file = if to_globals then stdout else open_out filename in
+      if not to_globals then emit_prologue ~open_modules file;
+      emit_funcs_prologue file fw;
+      lines |> List.iter (fprintf file "%s\n");
+      if not (List.is_empty inlines) then
+        fprintf file
+          {|(* Ensure inline function wrappers object file gets linked *)
+external _ensure_inlines_object_file_linked : unit -> unit = "_ensure_inlines_object_file_linked"
+
+|};
+      if not to_globals then close_out file;
+
+      inlines |> function
+      | [] -> ()
+      | lines ->
+          let filename = sprintf "data/%s/%s_inlines.c" fw fw in
+          let file = open_out filename in
+          lines |> List.iter (fprintf file "%s\n");
+          close_out file)

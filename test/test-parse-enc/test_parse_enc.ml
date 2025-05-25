@@ -1,4 +1,5 @@
 open Lib
+open Bind_objc
 module A = Alcotest
 
 (* Custom testable for the Objc_type.t type *)

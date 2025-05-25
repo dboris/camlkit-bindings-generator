@@ -1,6 +1,7 @@
 open Runtime
 open Lib
 open Util
+open Bind_objc
 
 let usage = {|
 Usage: generate-ml -classes <lib-name> | -methods <class-name>

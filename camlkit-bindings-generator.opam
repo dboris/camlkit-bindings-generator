@@ -20,6 +20,7 @@ depends: [
   "markup"
   "lambdasoup"
   "menhir"
+  "cmdliner"
   "alcotest" {with-test}
   "odoc" {with-doc}
 ]

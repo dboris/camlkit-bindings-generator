@@ -27,5 +27,6 @@
   markup
   lambdasoup
   menhir
+  cmdliner
   (alcotest :with-test))
  (tags (camlkit objc bindings macos ios cocoa gnustep)))

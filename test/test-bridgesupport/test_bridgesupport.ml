@@ -1,7 +1,7 @@
 (* open Runtime *)
 open Lib
 module A = Alcotest
-module B = Bridgesupport
+module B = Bind_c
 module S = Soup
 module M = Markup
 

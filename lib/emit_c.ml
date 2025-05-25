@@ -28,7 +28,9 @@ let rec cty_of_objc_type = function
   | `Struct (tag_opt, _fields) ->
       let name = Option.get tag_opt |> Util.remove_leading_underscores in
       C.Ty (Ctypes_static.typedef (structure name) name)
-  | _ -> failwith "cty_of_objc_type: Not implemented"
+  | _ ->
+      Printf.eprintf "cty_of_objc_type: Not implemented\n";
+      C.Ty void
 
 let cty_of_type_enc x = Encode.parse_type x |> Option.get |> cty_of_objc_type
 
