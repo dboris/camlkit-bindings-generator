@@ -335,12 +335,14 @@ let emit_globals ~open_modules ~fw ~verbose =
       if not to_globals then emit_prologue ~open_modules file;
       emit_funcs_prologue file fw;
       lines |> List.iter (fprintf file "%s\n");
-      if not (List.is_empty inlines) then
-        fprintf file
-          {|(* Ensure inline function wrappers object file gets linked *)
+      (match inlines with
+      | [] -> ()
+      | _ ->
+          fprintf file
+            {|(* Ensure inline function wrappers object file gets linked *)
 external _ensure_inlines_object_file_linked : unit -> unit = "_ensure_inlines_object_file_linked"
 
-|};
+|});
       if not to_globals then close_out file;
 
       inlines |> function
